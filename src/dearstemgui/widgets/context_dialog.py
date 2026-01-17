@@ -1,7 +1,7 @@
 import dearpygui.dearpygui as dpg
 
-from dearstemgui.states.libertem_state import LibertemSate
 from dearstemgui.app_state_singleton import APP_STATE
+from dearstemgui.states.libertem_state import LibertemSate
 
 
 def create_context_dialog() -> None:

@@ -1,11 +1,13 @@
-import dearpygui.dearpygui as dpg
 from pathlib import Path
+
+import dearpygui.dearpygui as dpg
 
 from dearstemgui.debug import debug_callback
 
+
 def open_file_dialog() -> Path:
-    if dpg.does_item_exist('file_dialog'):
-        dpg.delete_item('file_dialog')
+    if dpg.does_item_exist("file_dialog"):
+        dpg.delete_item("file_dialog")
 
     with dpg.file_dialog(
         tag="file_dialog",
@@ -19,4 +21,3 @@ def open_file_dialog() -> Path:
         dpg.add_file_extension(
             extension=".xml",
         )
-
