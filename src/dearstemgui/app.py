@@ -1,8 +1,13 @@
+# pyright: basic
 import dearpygui.dearpygui as dpg
-
+from dearstemgui.widgets.context_dialog import create_context_dialog
+from dearstemgui.widgets.file_dialogs import open_file_dialog
+from dearstemgui.states.app import AppState
+from dearstemgui.app_state_singleton import APP_STATE
 
 class MainWindow:
     def __init__(self) -> None:
+        self.app_state: AppState = APP_STATE
         dpg.create_context()
         self._setup_window()
         self.run()
@@ -11,7 +16,17 @@ class MainWindow:
     def _setup_window() -> None:
         with dpg.window(tag="main_window", label="dearstemgui", no_close=True):
             with dpg.menu_bar(tag="main_window_menu_bar"):
-                with dpg.menu(tag="main_window_menu_file"):
+                with dpg.menu(tag="main_window_menu_file", label="file"):
+                    dpg.add_menu_item(
+                        tag="main_window_menu_file_open",
+                        label="open",
+                        callback=open_file_dialog,
+                    )
+                    dpg.add_menu_item(
+                        tag="main_window_menu_file_context",
+                        label="context create",
+                        callback=create_context_dialog
+                    )
                     dpg.add_menu_item(
                         tag="main_window_menu_file_exit",
                         label="exit",
