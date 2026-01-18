@@ -6,7 +6,8 @@ import numpy as np
 
 class MRSTEMNavigator:
     def __init__(self, ds: DataSet, ctx: Context, tag_suffix: str) -> None:
-        self.tag_suffix: str = tag_suffix
+        self.tag_prefix: str = "ds_nav_"
+        self.tag_suffix: str = "_" + tag_suffix
 
         self.ds: DataSet = ds
         self.ctx: Context = ctx
@@ -18,6 +19,7 @@ class MRSTEMNavigator:
         self.vmax: float = np.inf
         self.plot_log: bool = False
 
+    def _setup_textures(self) -> None:
         with dpg.texture_registry():
             signal_data = np.zeros((*self.sig_shape, 4), dtype=np.float32)
             signal_data[:, :, 3] = 1.0
@@ -26,8 +28,11 @@ class MRSTEMNavigator:
                 height=self.sig_shape[0],
                 default_value=signal_data.flatten(),
                 format=dpg.mvFormat_Float_rgba,
-                tag=f"signal_texture_{self.tag_suffix}",
+                tag=self._tag("signal_texture"),
             )
+
+    def _tag(self, tag: str) -> str:
+        return self.tag_prefix + tag + self.tag_suffix
 
     def _move_up(self) -> None:
         if self.nav_pos[0] > 0:
@@ -64,7 +69,7 @@ class MRSTEMNavigator:
         if self.plot_log:
             signal_data = np.log(signal_data - signal_data.min() + 1)
 
-        self.vmax = float(dpg.get_value(f"vmax_{self.tag_suffix}"))
+        self.vmax = float(dpg.get_value(self._tag("position_text")))
         signal_data = np.where(signal_data > self.vmax, self.vmax, signal_data)
 
         signal_norm = (signal_data - signal_data.min()) / (
@@ -77,15 +82,15 @@ class MRSTEMNavigator:
         signal_rgba[:, :, 3] = 1.0  # A
         dpg.set_value(f"signal_texture_{self.tag_suffix}", signal_rgba.flatten())
         dpg.set_value(
-            f"position_text_{self.tag_suffix}",
+            self._tag("position_text"),
             f"Position: ({self.nav_pos[0]}, {self.nav_pos[1]})",
         )
 
     def render(self) -> None:
-        with dpg.window(tag=f"stem_navigator_{self.tag_suffix}"):
+        with dpg.window(tag=self._tag("stem_navigator")):
             dpg.add_text(
                 f"Postition: ({self.nav_pos[0]}, {self.nav_pos[1]})",
-                tag=f"position_text_{self.tag_suffix}",
+                tag=self._tag("position_text"),
             )
             dpg.add_image(
                 texture_tag=f"signal_texture_{self.tag_suffix}",
@@ -96,7 +101,7 @@ class MRSTEMNavigator:
             dpg.add_button(label="right", callback=self._move_right)
             dpg.add_button(label="log", callback=self._toggle_log)
             dpg.add_input_float(
-                tag=f"vmax_{self.tag_suffix}",
+                tag=self._tag("vmax"),
                 label="vmax",
                 default_value=self.vmax,
                 step=1_000,
