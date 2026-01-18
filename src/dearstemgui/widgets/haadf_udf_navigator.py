@@ -65,33 +65,51 @@ class HAADFNavigator(MRSTEMNavigator):
 
     def _update_mask_circles(self) -> None:
         draw_list = self._tag("signal_drawlist")
+        dpg.set_item_width(draw_list, dpg.get_item_width(self._tag("stem_navigator")))
+        dpg.set_item_height(draw_list, dpg.get_item_width(self._tag("stem_navigator")))
         if dpg.does_item_exist(draw_list):
             dpg.delete_item(draw_list, children_only=True)
-            dpg.set_item_width(draw_list, width=dpg.get_item_width(self._tag("stem_navigator")))
 
         cx = dpg.get_value(self._tag("mask_x"))
         cy = dpg.get_value(self._tag("mask_y"))
         ri = dpg.get_value(self._tag("mask_r"))
         ro = dpg.get_value(self._tag("mask_ro"))
 
+        height, width = dpg.get_item_rect_size(draw_list)
+
+        # Only draw if we have valid dimensions
+        if width <= 0 or height <= 0:
+            return
+
+        scale_x = width / self.sig_shape[1]
+        scale_y = height / self.sig_shape[0]
+
+        pmin = (0, 0)
+        pmax = (width, height)
+
+        scaled_cx = pmin[0] + cx * scale_x
+        scaled_cy = pmin[1] + cy * scale_y
+        scaled_ri = ri * scale_x
+        scaled_ro = ro * scale_x
+
         dpg.draw_image(
             self._tag("signal_texture"),
-            pmin=dpg.get_item_rect_min(draw_list),
-            pmax=dpg.get_item_rect_max(draw_list),
+            pmin=pmin,
+            pmax=pmax,
             tag=self._tag("signal_texture_image"),
-            parent=draw_list
+            parent=draw_list,
         )
         dpg.draw_circle(
-            (cx, cy),
-            ri,
+            (scaled_cx, scaled_cy),
+            scaled_ri,
             color=(255, 0, 0, 255),
             thickness=2,
             parent=draw_list,
             tag=self._tag("mask_inner"),
         )
         dpg.draw_circle(
-            (cx, cy),
-            ro,
+            (scaled_cx, scaled_cy),
+            scaled_ro,
             color=(0, 255, 0, 255),
             thickness=2,
             parent=draw_list,
@@ -106,17 +124,21 @@ class HAADFNavigator(MRSTEMNavigator):
                 tag=self._tag("position_text"),
             )
             with dpg.drawlist(
-                width=dpg.get_item_width(window),
-                height=dpg.get_item_width(window),
+                width=500,
+                height=500,
                 tag=self._tag("signal_drawlist"),
             ) as draw_list:
-                dpg.draw_image(
-                    self._tag("signal_texture"),
-                    pmin=dpg.get_item_rect_min(draw_list),
-                    pmax=dpg.get_item_rect_max(draw_list),
-                    tag=self._tag("signal_texture_image"),
-                    parent=draw_list
+                pass
+
+            with dpg.item_handler_registry(tag=self._tag("signal_handler")) as handler:
+                dpg.add_item_visible_handler(
+                    callback=lambda: self._update_mask_circles()
                 )
+                dpg.add_item_resize_handler(
+                    callback=lambda: self._update_mask_circles()
+                )
+            dpg.bind_item_handler_registry(self._tag("signal_drawlist"), handler)
+
             dpg.add_button(label="up", callback=self._move_up)
             dpg.add_button(label="down", callback=self._move_down)
             dpg.add_button(label="left", callback=self._move_left)
