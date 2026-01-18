@@ -2,7 +2,7 @@ from pathlib import Path
 
 import dearpygui.dearpygui as dpg
 
-from dearstemgui.debug import debug_callback
+from dearstemgui.logic.file_loading import file_open_router
 
 
 def open_file_dialog() -> Path:
@@ -13,7 +13,7 @@ def open_file_dialog() -> Path:
         tag="file_dialog",
         directory_selector=False,
         show=True,
-        callback=debug_callback,
+        callback=file_open_router,
         width=700,
         height=400,
         default_path=str(Path.home()),
