@@ -32,6 +32,9 @@ class HAADFNavigator(MRSTEMNavigator):
     def update_signal(self) -> None:
         super().update_signal()
 
+    def _update_mask_params(self) -> None:
+        self._update_mask_circles()
+
     def compute(self) -> None:
         udf = self.ctx.create_ring_analysis(
             dataset=self.ds,
@@ -58,17 +61,62 @@ class HAADFNavigator(MRSTEMNavigator):
     def _push_update(self) -> None:
         super()._push_update()
         dpg.set_value(self._tag("result_texture"), self.result_rgba.flatten())
+        self._update_mask_circles()
+
+    def _update_mask_circles(self) -> None:
+        draw_list = self._tag("signal_drawlist")
+        if dpg.does_item_exist(draw_list):
+            dpg.delete_item(draw_list, children_only=True)
+            dpg.set_item_width(draw_list, width=dpg.get_item_width(self._tag("stem_navigator")))
+
+        cx = dpg.get_value(self._tag("mask_x"))
+        cy = dpg.get_value(self._tag("mask_y"))
+        ri = dpg.get_value(self._tag("mask_r"))
+        ro = dpg.get_value(self._tag("mask_ro"))
+
+        dpg.draw_image(
+            self._tag("signal_texture"),
+            pmin=dpg.get_item_rect_min(draw_list),
+            pmax=dpg.get_item_rect_max(draw_list),
+            tag=self._tag("signal_texture_image"),
+            parent=draw_list
+        )
+        dpg.draw_circle(
+            (cx, cy),
+            ri,
+            color=(255, 0, 0, 255),
+            thickness=2,
+            parent=draw_list,
+            tag=self._tag("mask_inner"),
+        )
+        dpg.draw_circle(
+            (cx, cy),
+            ro,
+            color=(0, 255, 0, 255),
+            thickness=2,
+            parent=draw_list,
+            tag=self._tag("mask_outer"),
+        )
 
     def render(self) -> None:
         self._setup_textures()
-        with dpg.window(tag=self._tag("stem_navigator")):
+        with dpg.window(tag=self._tag("stem_navigator")) as window:
             dpg.add_text(
                 f"Postition: ({self.nav_pos[0]}, {self.nav_pos[1]})",
                 tag=self._tag("position_text"),
             )
-            dpg.add_image(
-                texture_tag=self._tag("signal_texture"),
-            )
+            with dpg.drawlist(
+                width=dpg.get_item_width(window),
+                height=dpg.get_item_width(window),
+                tag=self._tag("signal_drawlist"),
+            ) as draw_list:
+                dpg.draw_image(
+                    self._tag("signal_texture"),
+                    pmin=dpg.get_item_rect_min(draw_list),
+                    pmax=dpg.get_item_rect_max(draw_list),
+                    tag=self._tag("signal_texture_image"),
+                    parent=draw_list
+                )
             dpg.add_button(label="up", callback=self._move_up)
             dpg.add_button(label="down", callback=self._move_down)
             dpg.add_button(label="left", callback=self._move_left)
@@ -88,6 +136,7 @@ class HAADFNavigator(MRSTEMNavigator):
                 default_value=self.mask_x,
                 min_value=0,
                 max_value=self.sig_shape[1],
+                callback=self._update_mask_params,
             )
             dpg.add_input_int(
                 tag=self._tag("mask_y"),
@@ -95,6 +144,7 @@ class HAADFNavigator(MRSTEMNavigator):
                 default_value=self.mask_y,
                 min_value=0,
                 max_value=self.sig_shape[0],
+                callback=self._update_mask_params,
             )
             dpg.add_input_int(
                 tag=self._tag("mask_r"),
@@ -102,6 +152,7 @@ class HAADFNavigator(MRSTEMNavigator):
                 default_value=self.mask_r,
                 min_value=0,
                 max_value=self.sig_shape[0],
+                callback=self._update_mask_params,
             )
             dpg.add_input_int(
                 tag=self._tag("mask_ro"),
@@ -109,6 +160,7 @@ class HAADFNavigator(MRSTEMNavigator):
                 default_value=self.mask_ro,
                 min_value=0,
                 max_value=self.sig_shape[0],
+                callback=self._update_mask_params,
             )
             dpg.add_button(label="compute", callback=self.compute)
 
