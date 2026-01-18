@@ -1,6 +1,7 @@
 from libertem.api import Context
 
 from dearstemgui.app_state_singleton import APP_STATE
+from dearstemgui.widgets.haadf_udf_navigator import HAADFNavigator
 from dearstemgui.widgets.mrstem_navigator import MRSTEMNavigator
 
 
@@ -18,3 +19,5 @@ def file_open_router(sender: str, data: dict) -> None:
             ds = ctx.load(filetype="empad", path=file_path)
             stem_navigator = MRSTEMNavigator(ds, ctx, tag_suffix=file_name)
             stem_navigator.render()
+            haadf_navigator = HAADFNavigator(ds, ctx, tag_suffix=file_name)
+            haadf_navigator.render()

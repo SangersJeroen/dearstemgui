@@ -19,14 +19,15 @@ class MRSTEMNavigator:
         self.vmax: float = np.inf
         self.plot_log: bool = False
 
+        self.signal_rgba: np.ndarray = np.zeros((*self.nav_shape, 4), dtype=np.float32)
+        self.signal_rgba[:, :, 3] = 1.0
+
     def _setup_textures(self) -> None:
         with dpg.texture_registry():
-            signal_data = np.zeros((*self.sig_shape, 4), dtype=np.float32)
-            signal_data[:, :, 3] = 1.0
             dpg.add_raw_texture(
                 width=self.sig_shape[1],
                 height=self.sig_shape[0],
-                default_value=signal_data.flatten(),
+                default_value=self.signal_rgba.flatten(),
                 format=dpg.mvFormat_Float_rgba,
                 tag=self._tag("signal_texture"),
             )
@@ -38,25 +39,30 @@ class MRSTEMNavigator:
         if self.nav_pos[0] > 0:
             self.nav_pos = (self.nav_pos[0] - 1, self.nav_pos[1])
         self.update_signal()
+        self._push_update()
 
     def _move_down(self) -> None:
         if self.nav_pos[0] < self.nav_shape[0] - 1:
             self.nav_pos = (self.nav_pos[0] + 1, self.nav_pos[1])
         self.update_signal()
+        self._push_update()
 
     def _move_left(self) -> None:
         if self.nav_pos[1] > 0:
             self.nav_pos = (self.nav_pos[0], self.nav_pos[1] - 1)
         self.update_signal()
+        self._push_update()
 
     def _move_right(self) -> None:
         if self.nav_pos[1] < self.nav_shape[1] - 1:
             self.nav_pos = (self.nav_pos[0], self.nav_pos[1] + 1)
         self.update_signal()
+        self._push_update()
 
     def _toggle_log(self) -> None:
         self.plot_log = not self.plot_log
         self.update_signal()
+        self._push_update()
 
     def update_signal(self) -> None:
         roi = np.zeros(self.nav_shape, dtype=bool)
@@ -69,7 +75,7 @@ class MRSTEMNavigator:
         if self.plot_log:
             signal_data = np.log(signal_data - signal_data.min() + 1)
 
-        self.vmax = float(dpg.get_value(self._tag("position_text")))
+        self.vmax = float(dpg.get_value(self._tag("vmax")))
         signal_data = np.where(signal_data > self.vmax, self.vmax, signal_data)
 
         signal_norm = (signal_data - signal_data.min()) / (
@@ -80,20 +86,24 @@ class MRSTEMNavigator:
         signal_rgba[:, :, 1] = signal_norm  # G
         signal_rgba[:, :, 2] = signal_norm  # B
         signal_rgba[:, :, 3] = 1.0  # A
-        dpg.set_value(f"signal_texture_{self.tag_suffix}", signal_rgba.flatten())
+        self.signal_rgba = signal_rgba
+
+    def _push_update(self) -> None:
+        dpg.set_value(self._tag("signal_texture"), self.signal_rgba.flatten())
         dpg.set_value(
             self._tag("position_text"),
             f"Position: ({self.nav_pos[0]}, {self.nav_pos[1]})",
         )
 
     def render(self) -> None:
+        self._setup_textures()
         with dpg.window(tag=self._tag("stem_navigator")):
             dpg.add_text(
                 f"Postition: ({self.nav_pos[0]}, {self.nav_pos[1]})",
                 tag=self._tag("position_text"),
             )
             dpg.add_image(
-                texture_tag=f"signal_texture_{self.tag_suffix}",
+                texture_tag=self._tag("signal_texture"),
             )
             dpg.add_button(label="up", callback=self._move_up)
             dpg.add_button(label="down", callback=self._move_down)
@@ -107,3 +117,4 @@ class MRSTEMNavigator:
                 step=1_000,
             )
         self.update_signal()
+        self._push_update()
