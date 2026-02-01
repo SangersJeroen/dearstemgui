@@ -1,5 +1,5 @@
 import dearpygui.dearpygui as dpg
-from libertem.api import Context, DataSet
+from libertem.api import Context
 import numpy as np
 
 from dearstemgui.logic.measurement import EMPAD_Measurements

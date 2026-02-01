@@ -1,7 +1,5 @@
 import dearpygui.dearpygui as dpg
 
-from dearstemgui.app_state_singleton import APP_STATE
-
 
 def create_new_analysis_dialog():
     if dpg.does_item_exist("new_analysis_dialog"):

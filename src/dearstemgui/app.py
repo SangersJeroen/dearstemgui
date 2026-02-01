@@ -3,10 +3,9 @@ import dearpygui.dearpygui as dpg
 
 from dearstemgui.app_state_singleton import APP_STATE
 from dearstemgui.states.app import AppState
-
+from dearstemgui.widgets.analysis_dialog import create_new_analysis_dialog
 from dearstemgui.widgets.context_dialog import create_context_dialog
 from dearstemgui.widgets.file_dialogs import open_file_dialog
-from dearstemgui.widgets.analysis_dialog import create_new_analysis_dialog
 
 
 class MainWindow:

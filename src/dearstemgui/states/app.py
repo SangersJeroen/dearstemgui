@@ -1,6 +1,6 @@
-from dearstemgui.states.libertem_state import LibertemSate
-from libertem.api import DataSet
 from typing import Any
+
+from dearstemgui.states.libertem_state import LibertemSate
 
 
 class AppState:

@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
@@ -6,7 +5,6 @@ from libertem.api import DataSet
 import numpy as np
 
 from dearstemgui.app_state_singleton import APP_STATE
-from dearstemgui.states.libertem_state import LibertemSate
 
 
 def expand_blob(blob, attributes={}):
@@ -101,6 +99,7 @@ class EMPAD_Measurements:
         # Navigation location
         self.pos_x_idx: int = 0
         self.pos_y_idx: int = 0
+
 
 def main():
     path = Path(r"/home/jeroensangers/Data/acquisition_6/acquisition_6.xml")
