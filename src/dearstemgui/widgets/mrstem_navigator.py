@@ -14,6 +14,7 @@ class MRSTEMNavigator:
         self.tag_suffix: str = "_" + tag_suffix
 
         self.measurement: EMPAD_Measurements = measurement
+        self.measurement.update_nav_callbacks.append(self.update_signal)
         self.ds: DataSet = measurement.dataset
         self.ctx: Context = ctx
 
@@ -42,31 +43,26 @@ class MRSTEMNavigator:
     def _move_up(self) -> None:
         if self.measurement.pos_y_idx > 0:
             self.measurement.pos_y_idx -= 1
-        self.update_signal()
-        self._push_update()
+        self.measurement.update_open()
 
     def _move_down(self) -> None:
         if self.measurement.pos_y_idx < self.nav_shape[0] - 1:
             self.measurement.pos_y_idx += 1
-        self.update_signal()
-        self._push_update()
+        self.measurement.update_open()
 
     def _move_left(self) -> None:
         if self.measurement.pos_x_idx > 0:
             self.measurement.pos_x_idx -= 1
-        self.update_signal()
-        self._push_update()
+        self.measurement.update_open()
 
     def _move_right(self) -> None:
         if self.measurement.pos_x_idx < self.nav_shape[1] - 1:
             self.measurement.pos_x_idx += 1
-        self.update_signal()
-        self._push_update()
+        self.measurement.update_open()
 
     def _toggle_log(self) -> None:
         self.plot_log = not self.plot_log
         self.update_signal()
-        self._push_update()
 
     def update_signal(self) -> None:
         roi = np.zeros(self.nav_shape, dtype=bool)
@@ -91,6 +87,7 @@ class MRSTEMNavigator:
         signal_rgba[:, :, 2] = signal_norm  # B
         signal_rgba[:, :, 3] = 1.0  # A
         self.signal_rgba = signal_rgba
+        self._push_update()
 
     def _push_update(self) -> None:
         dpg.set_value(self._tag("signal_texture"), self.signal_rgba.flatten())
@@ -121,4 +118,3 @@ class MRSTEMNavigator:
                 step=1_000,
             )
         self.update_signal()
-        self._push_update()

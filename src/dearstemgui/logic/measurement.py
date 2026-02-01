@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Callable
 import xml.etree.ElementTree as ET
 
 from libertem.api import DataSet
@@ -99,6 +100,11 @@ class EMPAD_Measurements:
         # Navigation location
         self.pos_x_idx: int = 0
         self.pos_y_idx: int = 0
+        self.update_nav_callbacks: list[Callable] = []
+
+    def update_open(self) -> None:
+        for callback in self.update_nav_callbacks:
+            callback()
 
 
 def main():

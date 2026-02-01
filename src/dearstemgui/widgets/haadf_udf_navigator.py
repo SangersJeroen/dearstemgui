@@ -9,7 +9,6 @@ from dearstemgui.widgets.mrstem_navigator import MRSTEMNavigator
 class HAADFNavigator(MRSTEMNavigator):
     def __init__(self, measurement: EMPAD_Measurements, ctx: Context, tag_suffix: str) -> None:
         super().__init__(measurement, ctx, tag_suffix)
-        self.measurement: EMPAD_Measurements = measurement
         self.tag_prefix: str = "ds_haadf_"
 
         self.mask_x: int = self.sig_shape[1] // 2
