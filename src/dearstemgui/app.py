@@ -3,8 +3,10 @@ import dearpygui.dearpygui as dpg
 
 from dearstemgui.app_state_singleton import APP_STATE
 from dearstemgui.states.app import AppState
+
 from dearstemgui.widgets.context_dialog import create_context_dialog
 from dearstemgui.widgets.file_dialogs import open_file_dialog
+from dearstemgui.widgets.analysis_dialog import create_new_analysis_dialog
 
 
 class MainWindow:
@@ -33,6 +35,12 @@ class MainWindow:
                         tag="main_window_menu_file_exit",
                         label="exit",
                         callback=dpg.stop_dearpygui,
+                    )
+                with dpg.menu(tag="main_window_menu_analyses", label="analysis"):
+                    dpg.add_menu_item(
+                        tag="main_window_menu_analysis_new",
+                        label="new",
+                        callback=create_new_analysis_dialog,
                     )
 
     @staticmethod

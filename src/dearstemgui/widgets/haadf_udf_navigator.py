@@ -2,12 +2,14 @@ import dearpygui.dearpygui as dpg
 from libertem.api import Context, DataSet
 import numpy as np
 
+from dearstemgui.logic.measurement import EMPAD_Measurements
 from dearstemgui.widgets.mrstem_navigator import MRSTEMNavigator
 
 
 class HAADFNavigator(MRSTEMNavigator):
-    def __init__(self, ds: DataSet, ctx: Context, tag_suffix: str) -> None:
-        super().__init__(ds, ctx, tag_suffix)
+    def __init__(self, measurement: EMPAD_Measurements, ctx: Context, tag_suffix: str) -> None:
+        super().__init__(measurement, ctx, tag_suffix)
+        self.measurement: EMPAD_Measurements = measurement
         self.tag_prefix: str = "ds_haadf_"
 
         self.mask_x: int = self.sig_shape[1] // 2
@@ -31,9 +33,6 @@ class HAADFNavigator(MRSTEMNavigator):
 
     def update_signal(self) -> None:
         super().update_signal()
-
-    def _update_mask_params(self) -> None:
-        self._update_mask_circles()
 
     def compute(self) -> None:
         udf = self.ctx.create_ring_analysis(
@@ -61,9 +60,8 @@ class HAADFNavigator(MRSTEMNavigator):
     def _push_update(self) -> None:
         super()._push_update()
         dpg.set_value(self._tag("result_texture"), self.result_rgba.flatten())
-        self._update_mask_circles()
 
-    def _update_mask_circles(self) -> None:
+    def _update_signal(self) -> None:
         draw_list = self._tag("signal_drawlist")
         dpg.set_item_width(draw_list, dpg.get_item_width(self._tag("stem_navigator")))
         dpg.set_item_height(draw_list, dpg.get_item_width(self._tag("stem_navigator")))
@@ -116,6 +114,31 @@ class HAADFNavigator(MRSTEMNavigator):
             tag=self._tag("mask_outer"),
         )
 
+    def _update_result(self):
+        draw_list = self._tag("result_drawlist")
+        dpg.set_item_width(draw_list, dpg.get_item_width(self._tag("stem_navigator")))
+        dpg.set_item_height(draw_list, dpg.get_item_width(self._tag("stem_navigator")))
+        if dpg.does_item_exist(draw_list):
+            dpg.delete_item(draw_list, children_only=True)
+        height, width = dpg.get_item_rect_size(draw_list)
+
+        # Only draw if we have valid dimensions
+        if width <= 0 or height <= 0:
+            return
+
+        # scale_x = width / self.sig_shape[1]
+        # scale_y = height / self.sig_shape[0]
+
+        pmin = (0, 0)
+        pmax = (width, height)
+        dpg.draw_image(
+            texture_tag=self._tag("result_texture"),
+            pmin=pmin,
+            pmax=pmax,
+            tag=self._tag("result_texture_image"),
+            parent=draw_list,
+        )
+
     def render(self) -> None:
         self._setup_textures()
         with dpg.window(tag=self._tag("stem_navigator")) as window:
@@ -131,12 +154,8 @@ class HAADFNavigator(MRSTEMNavigator):
                 pass
 
             with dpg.item_handler_registry(tag=self._tag("signal_handler")) as handler:
-                dpg.add_item_visible_handler(
-                    callback=lambda: self._update_mask_circles()
-                )
-                dpg.add_item_resize_handler(
-                    callback=lambda: self._update_mask_circles()
-                )
+                dpg.add_item_visible_handler(callback=lambda: self._update_signal())
+                dpg.add_item_resize_handler(callback=lambda: self._update_signal())
             dpg.bind_item_handler_registry(self._tag("signal_drawlist"), handler)
 
             dpg.add_button(label="up", callback=self._move_up)
@@ -150,15 +169,26 @@ class HAADFNavigator(MRSTEMNavigator):
                 default_value=self.vmax,
                 step=1_000,
             )
+
             dpg.add_text("HAADF")
-            dpg.add_image(texture_tag=self._tag("result_texture"))
+            with dpg.drawlist(
+                width=500,
+                height=500,
+                tag=self._tag("result_drawlist"),
+            ) as drawlist:
+                pass
+
+            with dpg.item_handler_registry(tag=self._tag("result_handler")) as handler:
+                dpg.add_item_visible_handler(callback=lambda: self._update_result())
+                dpg.add_item_resize_handler(callback=lambda: self._update_result())
+            dpg.bind_item_handler_registry(self._tag("result_drawlist"), handler)
+
             dpg.add_input_int(
                 tag=self._tag("mask_x"),
                 label="mask_x",
                 default_value=self.mask_x,
                 min_value=0,
                 max_value=self.sig_shape[1],
-                callback=self._update_mask_params,
             )
             dpg.add_input_int(
                 tag=self._tag("mask_y"),
@@ -166,7 +196,6 @@ class HAADFNavigator(MRSTEMNavigator):
                 default_value=self.mask_y,
                 min_value=0,
                 max_value=self.sig_shape[0],
-                callback=self._update_mask_params,
             )
             dpg.add_input_int(
                 tag=self._tag("mask_r"),
@@ -174,7 +203,6 @@ class HAADFNavigator(MRSTEMNavigator):
                 default_value=self.mask_r,
                 min_value=0,
                 max_value=self.sig_shape[0],
-                callback=self._update_mask_params,
             )
             dpg.add_input_int(
                 tag=self._tag("mask_ro"),
@@ -182,7 +210,6 @@ class HAADFNavigator(MRSTEMNavigator):
                 default_value=self.mask_ro,
                 min_value=0,
                 max_value=self.sig_shape[0],
-                callback=self._update_mask_params,
             )
             dpg.add_button(label="compute", callback=self.compute)
 

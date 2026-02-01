@@ -1,6 +1,7 @@
 from libertem.api import Context
 
 from dearstemgui.app_state_singleton import APP_STATE
+from dearstemgui.logic.measurement import EMPAD_Measurements
 from dearstemgui.widgets.haadf_udf_navigator import HAADFNavigator
 from dearstemgui.widgets.mrstem_navigator import MRSTEMNavigator
 
@@ -16,8 +17,9 @@ def file_open_router(sender: str, data: dict) -> None:
             if ctx is None:
                 raise Exception("No context")
             ctx: Context
-            ds = ctx.load(filetype="empad", path=file_path)
-            stem_navigator = MRSTEMNavigator(ds, ctx, tag_suffix=file_name)
+            new_measurement = EMPAD_Measurements(file_path)
+            APP_STATE.add_measurement(new_measurement)
+            stem_navigator = MRSTEMNavigator(new_measurement, ctx, tag_suffix=file_name)
             stem_navigator.render()
-            haadf_navigator = HAADFNavigator(ds, ctx, tag_suffix=file_name)
+            haadf_navigator = HAADFNavigator(new_measurement, ctx, tag_suffix=file_name)
             haadf_navigator.render()

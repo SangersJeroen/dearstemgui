@@ -3,17 +3,20 @@ from libertem.api import Context, DataSet
 from libertem.udf.raw import PickUDF
 import numpy as np
 
+from dearstemgui.logic.measurement import EMPAD_Measurements
+
 
 class MRSTEMNavigator:
-    def __init__(self, ds: DataSet, ctx: Context, tag_suffix: str) -> None:
+    def __init__(self, measurement: EMPAD_Measurements, ctx: Context, tag_suffix: str) -> None:
         self.tag_prefix: str = "ds_nav_"
         self.tag_suffix: str = "_" + tag_suffix
 
-        self.ds: DataSet = ds
+        self.measurement: EMPAD_Measurements = measurement
+        self.ds: DataSet = measurement.dataset 
         self.ctx: Context = ctx
 
-        self.nav_shape: tuple[int, int] = ds.shape.nav
-        self.sig_shape: tuple[int, int] = ds.shape.sig
+        self.nav_shape: tuple[int, int] = self.ds.shape.nav
+        self.sig_shape: tuple[int, int] = self.ds.shape.sig
         self.nav_pos: tuple[int, int] = (0, 0)
 
         self.vmax: float = np.inf
