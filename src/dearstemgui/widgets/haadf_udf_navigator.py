@@ -7,12 +7,15 @@ from dearstemgui.widgets.mrstem_navigator import MRSTEMNavigator
 
 
 class HAADFNavigator(MRSTEMNavigator):
-    def __init__(self, measurement: EMPAD_Measurements, ctx: Context, tag_suffix: str) -> None:
+    def __init__(
+        self, measurement: EMPAD_Measurements, ctx: Context, tag_suffix: str
+    ) -> None:
         super().__init__(measurement, ctx, tag_suffix)
-        self.tag_prefix: str = "ds_haadf_"
+        self.tag_prefix: str = str(measurement.index) + "_" + "ds_haadf_"
 
         self.mask_x: int = self.sig_shape[1] // 2
         self.mask_y: int = self.sig_shape[0] // 2
+
         self.mask_r: int = 10
         self.mask_ro: int = 30
 
@@ -140,7 +143,10 @@ class HAADFNavigator(MRSTEMNavigator):
 
     def render(self) -> None:
         self._setup_textures()
-        with dpg.window(tag=self._tag("stem_navigator")) as window:
+        with dpg.window(
+            tag=self._tag("stem_navigator"),
+            label=str(self.measurement.index) + " STEM Navigator",
+        ) as window:
             dpg.add_text(
                 f"Postition: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
                 tag=self._tag("position_text"),

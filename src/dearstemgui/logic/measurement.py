@@ -82,6 +82,7 @@ class EMPAD_Measurements:
         if APP_STATE.libertem_state is None:
             raise RuntimeError("Libertem state is not initialized")
 
+        self.index: int | None = None
         self.dataset: DataSet = APP_STATE.libertem_state.context.load(
             filetype="empad", path=xml_file_path
         )
@@ -105,6 +106,9 @@ class EMPAD_Measurements:
     def update_open(self) -> None:
         for callback in self.update_nav_callbacks:
             callback()
+
+    def set_index(self, index: int) -> None:
+        self.index: int = index
 
 
 def main():

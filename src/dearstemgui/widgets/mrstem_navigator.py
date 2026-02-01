@@ -10,7 +10,7 @@ class MRSTEMNavigator:
     def __init__(
         self, measurement: EMPAD_Measurements, ctx: Context, tag_suffix: str
     ) -> None:
-        self.tag_prefix: str = "ds_nav_"
+        self.tag_prefix: str = str(measurement.index) + "_" + "ds_nav_"
         self.tag_suffix: str = "_" + tag_suffix
 
         self.measurement: EMPAD_Measurements = measurement
@@ -98,7 +98,10 @@ class MRSTEMNavigator:
 
     def render(self) -> None:
         self._setup_textures()
-        with dpg.window(tag=self._tag("stem_navigator")):
+        with dpg.window(
+            tag=self._tag("stem_navigator"),
+            label=str(self.measurement.index) + " Navigator",
+        ):
             dpg.add_text(
                 f"Position: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
                 tag=self._tag("position_text"),
