@@ -143,7 +143,7 @@ class HAADFNavigator(MRSTEMNavigator):
         self._setup_textures()
         with dpg.window(tag=self._tag("stem_navigator")) as window:
             dpg.add_text(
-                f"Postition: ({self.nav_pos[0]}, {self.nav_pos[1]})",
+                f"Postition: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
                 tag=self._tag("position_text"),
             )
             with dpg.drawlist(

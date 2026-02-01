@@ -7,17 +7,18 @@ from dearstemgui.logic.measurement import EMPAD_Measurements
 
 
 class MRSTEMNavigator:
-    def __init__(self, measurement: EMPAD_Measurements, ctx: Context, tag_suffix: str) -> None:
+    def __init__(
+        self, measurement: EMPAD_Measurements, ctx: Context, tag_suffix: str
+    ) -> None:
         self.tag_prefix: str = "ds_nav_"
         self.tag_suffix: str = "_" + tag_suffix
 
         self.measurement: EMPAD_Measurements = measurement
-        self.ds: DataSet = measurement.dataset 
+        self.ds: DataSet = measurement.dataset
         self.ctx: Context = ctx
 
         self.nav_shape: tuple[int, int] = self.ds.shape.nav
         self.sig_shape: tuple[int, int] = self.ds.shape.sig
-        self.nav_pos: tuple[int, int] = (0, 0)
 
         self.vmax: float = np.inf
         self.plot_log: bool = False
@@ -39,26 +40,26 @@ class MRSTEMNavigator:
         return self.tag_prefix + tag + self.tag_suffix
 
     def _move_up(self) -> None:
-        if self.nav_pos[0] > 0:
-            self.nav_pos = (self.nav_pos[0] - 1, self.nav_pos[1])
+        if self.measurement.pos_y_idx > 0:
+            self.measurement.pos_y_idx -= 1
         self.update_signal()
         self._push_update()
 
     def _move_down(self) -> None:
-        if self.nav_pos[0] < self.nav_shape[0] - 1:
-            self.nav_pos = (self.nav_pos[0] + 1, self.nav_pos[1])
+        if self.measurement.pos_y_idx < self.nav_shape[0] - 1:
+            self.measurement.pos_y_idx += 1
         self.update_signal()
         self._push_update()
 
     def _move_left(self) -> None:
-        if self.nav_pos[1] > 0:
-            self.nav_pos = (self.nav_pos[0], self.nav_pos[1] - 1)
+        if self.measurement.pos_x_idx > 0:
+            self.measurement.pos_x_idx -= 1
         self.update_signal()
         self._push_update()
 
     def _move_right(self) -> None:
-        if self.nav_pos[1] < self.nav_shape[1] - 1:
-            self.nav_pos = (self.nav_pos[0], self.nav_pos[1] + 1)
+        if self.measurement.pos_x_idx < self.nav_shape[1] - 1:
+            self.measurement.pos_x_idx += 1
         self.update_signal()
         self._push_update()
 
@@ -69,7 +70,7 @@ class MRSTEMNavigator:
 
     def update_signal(self) -> None:
         roi = np.zeros(self.nav_shape, dtype=bool)
-        roi[self.nav_pos[0], self.nav_pos[1]] = True
+        roi[self.measurement.pos_y_idx, self.measurement.pos_x_idx] = True
 
         pick_udf = PickUDF()
         result = self.ctx.run_udf(dataset=self.ds, udf=pick_udf, roi=roi)
@@ -95,14 +96,14 @@ class MRSTEMNavigator:
         dpg.set_value(self._tag("signal_texture"), self.signal_rgba.flatten())
         dpg.set_value(
             self._tag("position_text"),
-            f"Position: ({self.nav_pos[0]}, {self.nav_pos[1]})",
+            f"Position: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
         )
 
     def render(self) -> None:
         self._setup_textures()
         with dpg.window(tag=self._tag("stem_navigator")):
             dpg.add_text(
-                f"Postition: ({self.nav_pos[0]}, {self.nav_pos[1]})",
+                f"Position: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
                 tag=self._tag("position_text"),
             )
             dpg.add_image(
