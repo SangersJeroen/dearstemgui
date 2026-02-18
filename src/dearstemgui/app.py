@@ -3,8 +3,8 @@ import dearpygui.dearpygui as dpg
 
 from dearstemgui.app_state_singleton import APP_STATE
 from dearstemgui.states.app import AppState
-from dearstemgui.widgets.analysis_dialog import create_new_analysis_dialog
 from dearstemgui.widgets.context_dialog import create_context_dialog
+from dearstemgui.logic.analyses import analyses_router_callback
 from dearstemgui.widgets.file_dialogs import open_file_dialog
 
 
@@ -19,7 +19,7 @@ class MainWindow:
     def _setup_window() -> None:
         with dpg.window(tag="main_window", label="dearstemgui", no_close=True):
             with dpg.menu_bar(tag="main_window_menu_bar"):
-                with dpg.menu(tag="main_window_menu_file", label="file"):
+                with dpg.menu(tag="main_window_menu_file", label="File"):
                     dpg.add_menu_item(
                         tag="main_window_menu_file_open",
                         label="open",
@@ -35,11 +35,54 @@ class MainWindow:
                         label="exit",
                         callback=dpg.stop_dearpygui,
                     )
-                with dpg.menu(tag="main_window_menu_analyses", label="analysis"):
+                with dpg.menu(tag="main_window_menu_new_analyses", label="Analyses"):
+                    with dpg.menu(
+                        tag="main_window_menu_new_analyses_masks", label="Intensity Mask"
+                    ):
+                        dpg.add_menu_item(
+                            tag="new_analyses_masks_adf",
+                            label="Annular Dark-Field",
+                            user_data='adf',
+                            callback=analyses_router_callback,
+                        )
+                        dpg.add_menu_item(
+                            tag="new_analyses_masks_abf",
+                            label="Axial Bright-Field",
+                            user_data='abf',
+                            callback=analyses_router_callback,
+                        )
+                        dpg.add_menu_item(
+                            tag="new_analyses_masks_point",
+                            label="Point",
+                            user_data='point',
+                            callback=analyses_router_callback,
+                        )
+                        dpg.add_menu_item(
+                            tag="new_analyses_masks_paint",
+                            label="Paint",
+                            user_data='paint',
+                            callback=analyses_router_callback,
+                        )
+                    with dpg.menu(
+                        tag='main_window_menu_analysis_mrstem', label='Momentum Resolved'
+                    ):
+                        dpg.add_menu_item(
+                            tag='new_analyses_mrstem_rigid_shift',
+                            label='Rigid Deflection',
+                            user_data='rigid',
+                            callback=analyses_router_callback,
+                        )
+                        dpg.add_menu_item(
+                            tag='new_analyses_mrstem_com_shift',
+                            label='CoM Deflection',
+                            user_data='com',
+                            callback=analyses_router_callback,
+                        )
                     dpg.add_menu_item(
-                        tag="main_window_menu_analysis_new",
-                        label="new",
-                        callback=create_new_analysis_dialog,
+                        tag='new_analyses_pacbed',
+                        label='PACBED',
+                        user_data='pacbed',
+                        callback=analyses_router_callback,
                     )
 
     @staticmethod

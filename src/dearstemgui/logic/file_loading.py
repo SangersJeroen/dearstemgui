@@ -17,8 +17,8 @@ def file_open_router(sender: str, data: dict) -> None:
             if ctx is None:
                 raise Exception("No context")
             ctx: Context
-            new_measurement = EMPAD_Measurements(file_path)
 
+            new_measurement = EMPAD_Measurements(file_path)
             index = APP_STATE.add_measurement(new_measurement)
             new_measurement.index = index
 
