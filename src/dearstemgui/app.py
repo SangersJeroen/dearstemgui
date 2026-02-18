@@ -36,6 +36,12 @@ class MainWindow:
                         callback=dpg.stop_dearpygui,
                     )
                 with dpg.menu(tag="main_window_menu_new_analyses", label="Analyses"):
+                    dpg.add_menu_item(
+                        label='Browser',
+                        user_data='browser',
+                        callback=analyses_router_callback,
+                    )
+                    dpg.add_separator()
                     with dpg.menu(
                         tag="main_window_menu_new_analyses_masks", label="Intensity Mask"
                     ):
@@ -63,6 +69,7 @@ class MainWindow:
                             user_data='paint',
                             callback=analyses_router_callback,
                         )
+                    dpg.add_separator()
                     with dpg.menu(
                         tag='main_window_menu_analysis_mrstem', label='Momentum Resolved'
                     ):
@@ -78,6 +85,7 @@ class MainWindow:
                             user_data='com',
                             callback=analyses_router_callback,
                         )
+                    dpg.add_separator()
                     dpg.add_menu_item(
                         tag='new_analyses_pacbed',
                         label='PACBED',

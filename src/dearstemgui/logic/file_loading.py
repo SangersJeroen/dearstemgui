@@ -21,8 +21,3 @@ def file_open_router(sender: str, data: dict) -> None:
             new_measurement = EMPAD_Measurements(file_path)
             index = APP_STATE.add_measurement(new_measurement)
             new_measurement.index = index
-
-            stem_navigator = MRSTEMNavigator(new_measurement, ctx, tag_suffix=file_name)
-            stem_navigator.render()
-            haadf_navigator = HAADFNavigator(new_measurement, ctx, tag_suffix=file_name)
-            haadf_navigator.render()
