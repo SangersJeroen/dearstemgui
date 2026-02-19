@@ -4,6 +4,7 @@ from libertem.udf.raw import PickUDF
 import numpy as np
 
 from dearstemgui.logic.measurement import EMPAD_Measurements
+from dearstemgui.widgets.elements import navigation_element
 
 
 class MRSTEMNavigator:
@@ -101,23 +102,30 @@ class MRSTEMNavigator:
         with dpg.window(
             tag=self._tag("stem_navigator"),
             label=str(self.measurement.index) + " Navigator",
+            no_scrollbar=True,
         ):
-            dpg.add_text(
-                f"Position: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
-                tag=self._tag("position_text"),
-            )
-            dpg.add_image(
-                texture_tag=self._tag("signal_texture"),
-            )
-            dpg.add_button(label="up", callback=self._move_up)
-            dpg.add_button(label="down", callback=self._move_down)
-            dpg.add_button(label="left", callback=self._move_left)
-            dpg.add_button(label="right", callback=self._move_right)
-            dpg.add_button(label="log", callback=self._toggle_log)
-            dpg.add_input_float(
-                tag=self._tag("vmax"),
-                label="vmax",
-                default_value=self.vmax,
-                step=1_000,
-            )
+            with dpg.child_window(no_scrollbar=True):
+                dpg.add_text(
+                    f"Position: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
+                    tag=self._tag("position_text"),
+                )
+                dpg.add_image(
+                    texture_tag=self._tag("signal_texture"),
+                )
+            with dpg.child_window(no_scrollbar=True):
+                with dpg.group(horizontal=True):
+                    navigation_element([
+                        self._move_up,
+                        self._move_left,
+                        self._move_right,
+                        self._move_down,
+                    ])
+                    with dpg.group():
+                        dpg.add_button(label="log", callback=self._toggle_log)
+                        dpg.add_input_float(
+                            tag=self._tag("vmax"),
+                            label="vmax",
+                            default_value=self.vmax,
+                            step=1_000,
+                        )
         self.update_signal()

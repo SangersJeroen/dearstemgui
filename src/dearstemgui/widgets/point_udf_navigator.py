@@ -3,6 +3,7 @@ from libertem.api import Context
 import numpy as np
 
 from dearstemgui.logic.measurement import EMPAD_Measurements
+from dearstemgui.widgets.elements import navigation_element
 from dearstemgui.widgets.mrstem_navigator import MRSTEMNavigator
 
 
@@ -80,9 +81,6 @@ class PointSignalNavigator(MRSTEMNavigator):
         pmin = (0, 0)
         pmax = (width, height)
 
-        scaled_cx = pmin[0] + cx * scale_x
-        scaled_cy = pmin[1] + cy * scale_y
-
         dpg.draw_image(
             self._tag("signal_texture"),
             pmin=pmin,
@@ -143,17 +141,21 @@ class PointSignalNavigator(MRSTEMNavigator):
                 dpg.add_item_resize_handler(callback=lambda: self._update_signal())
             dpg.bind_item_handler_registry(self._tag("signal_drawlist"), handler)
 
-            dpg.add_button(label="up", callback=self._move_up)
-            dpg.add_button(label="down", callback=self._move_down)
-            dpg.add_button(label="left", callback=self._move_left)
-            dpg.add_button(label="right", callback=self._move_right)
-            dpg.add_button(label="log", callback=self._toggle_log)
-            dpg.add_input_float(
-                tag=self._tag("vmax"),
-                label="vmax",
-                default_value=self.vmax,
-                step=1_000,
-            )
+            with dpg.group(horizontal=True):
+                navigation_element([
+                    self._move_up,
+                    self._move_left,
+                    self._move_right,
+                    self._move_down,
+                ])
+
+                dpg.add_button(label="log", callback=self._toggle_log)
+                dpg.add_input_float(
+                    tag=self._tag("vmax"),
+                    label="vmax",
+                    default_value=self.vmax,
+                    step=1_000,
+                )
 
             dpg.add_text("ABF")
             with dpg.drawlist(
