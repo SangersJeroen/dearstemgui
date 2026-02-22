@@ -16,6 +16,7 @@ class MRSTEMNavigator:
 
         self.measurement: EMPAD_Measurements = measurement
         self.measurement.update_nav_callbacks.append(self.update_signal)
+
         self.ds: DataSet = measurement.dataset
         self.ctx: Context = ctx
 
