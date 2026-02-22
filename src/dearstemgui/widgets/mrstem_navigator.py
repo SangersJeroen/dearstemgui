@@ -26,11 +26,7 @@ class MRSTEMNavigator:
         self.vmax: float = np.inf
         self.plot_log: bool = False
 
-        self.signal_plot: ImPlotElement = ImPlotElement(
-            shape=self.sig_shape,
-            tag_prefix=self.tag_prefix + "_signal_image",
-            parent_tag=self._tag("signal_wrapper"),
-        )
+        self.signal_plot: ImPlotElement
 
     def _tag(self, tag: str) -> str:
         return self.tag_prefix + tag + self.tag_suffix
@@ -55,10 +51,6 @@ class MRSTEMNavigator:
             self.measurement.pos_x_idx += 1
         self.measurement.update_open()
 
-    def _toggle_log(self) -> None:
-        self.plot_log = not self.plot_log
-        self.update_signal()
-
     def update_signal(self) -> None:
         roi = np.zeros(self.nav_shape, dtype=bool)
         roi[self.measurement.pos_y_idx, self.measurement.pos_x_idx] = True
@@ -67,7 +59,6 @@ class MRSTEMNavigator:
         result = self.ctx.run_udf(dataset=self.ds, udf=pick_udf, roi=roi)
         signal_data = np.array(result["intensity"].data[0].reshape(self.sig_shape))
 
-        self.vmax = float(dpg.get_value(self._tag("vmax")))
         self.signal_plot.update(data=signal_data)
         self._push_update()
 
@@ -83,13 +74,14 @@ class MRSTEMNavigator:
             tag=self._tag("stem_navigator"),
             label=str(self.measurement.index) + " Navigator",
             no_scrollbar=True,
+            min_size=(100, 100),
         ):
-            with dpg.child_window(no_scrollbar=True, tag=self._tag("signal_wrapper")):
-                dpg.add_text(
-                    f"Position: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
-                    tag=self._tag("position_text"),
-                )
-                self.signal_plot.render()
+            self.signal_plot = ImPlotElement(
+                shape=self.sig_shape,
+                tag_prefix=self.tag_prefix + "_signal_image",
+                parent_tag=self._tag("stem_navigator"),
+            )
+            self.signal_plot.render()
 
             with dpg.child_window(no_scrollbar=True):
                 with dpg.group(horizontal=True):
@@ -99,12 +91,8 @@ class MRSTEMNavigator:
                         self._move_right,
                         self._move_down,
                     ])
-                    with dpg.group():
-                        dpg.add_button(label="log", callback=self._toggle_log)
-                        dpg.add_input_float(
-                            tag=self._tag("vmax"),
-                            label="vmax",
-                            default_value=self.vmax,
-                            step=1_000,
-                        )
+                dpg.add_text(
+                    f"Position: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
+                    tag=self._tag("position_text"),
+                )
         self.update_signal()
