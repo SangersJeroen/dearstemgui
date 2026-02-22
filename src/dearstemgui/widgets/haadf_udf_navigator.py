@@ -29,22 +29,22 @@ class HAADFNavigator(MRSTEMNavigator):
     def _mask_move_up(self) -> None:
         if self.mask_y > 0:
             self.mask_y -= 1
-        self.update_signal()
+        self.update_mask()
 
     def _mask_move_down(self) -> None:
         if self.mask_y < self.sig_shape[0] - 1:
             self.mask_y += 1
-        self.update_signal()
+        self.update_mask()
 
     def _mask_move_left(self) -> None:
         if self.mask_x > 0:
             self.mask_x -= 1
-        self.update_signal()
+        self.update_mask()
 
     def _mask_move_right(self) -> None:
         if self.mask_x < self.sig_shape[1] - 1:
             self.mask_x += 1
-        self.update_signal()
+        self.update_mask()
 
     def update_signal(self) -> None:
         super().update_signal()
@@ -53,8 +53,12 @@ class HAADFNavigator(MRSTEMNavigator):
     def update_mask(self) -> None:
         dlt = self.signal_plot.draw_list_tag
         scale: float = self.signal_plot.scale_x
-        if dpg.does_item_exist(self._tag("mask_ri")):
-            dpg.delete_item(self._tag("mask_ri"))
+        for tag in [
+            self._tag("mask_ri"),
+            self._tag("mask_ro"),
+        ]:
+            if dpg.does_item_exist(tag):
+                dpg.delete_item(tag)
 
         dpg.draw_circle(
             center=(self.mask_x * scale, self.mask_y * scale),
@@ -64,22 +68,35 @@ class HAADFNavigator(MRSTEMNavigator):
             parent=dlt,
             tag=self._tag("mask_ri"),
         )
+        dpg.draw_circle(
+            center=(self.mask_x * scale, self.mask_y * scale),
+            radius=self.r_select.cmax * scale,
+            color=(0, 255, 0, 255),
+            thickness=2,
+            parent=dlt,
+            tag=self._tag("mask_ro"),
+        )
 
     def compute(self) -> None:
+        print(f'compute, {self.mask_x}, {self.mask_y}, {self.r_select.cmin}, {self.r_select.cmax}')
         udf = self.ctx.create_ring_analysis(
             dataset=self.ds,
             cx=self.mask_x,
             cy=self.mask_y,
-            ri=dpg.get_value(self._tag("mask_r")),
-            ro=dpg.get_value(self._tag("mask_ro")),
+            ri=self.r_select.cmin,
+            ro=self.r_select.cmax,
         ).get_udf()
 
         result = self.ctx.run_udf(dataset=self.ds, udf=udf)
         result_data = np.array(result["intensity"].data.reshape(self.nav_shape))
         self.result_plot.update(data=result_data)
-        self._push_update()
+
+    def update_result(self) -> None:
+        self.result_plot.update()
+        self.result_plot._reset_slider()
 
     def ui_update(self):
+        super().ui_update()
         dpg.set_value(
             self._tag("position_text"),
             f"Position: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
@@ -88,7 +105,7 @@ class HAADFNavigator(MRSTEMNavigator):
 
     def update(self) -> None:
         self.update_signal()
-        # self.result_update()
+        self.update_result()
         self.ui_update()
 
     def render(self) -> None:
@@ -97,7 +114,7 @@ class HAADFNavigator(MRSTEMNavigator):
             label=str(self.measurement.index) + " STEM Navigator",
             no_scrollbar=True,
             min_size=(100, 100),
-        ):
+        ) as window:
             with dpg.group(
                 horizontal=True,
             ):
@@ -130,6 +147,10 @@ class HAADFNavigator(MRSTEMNavigator):
                             self._move_down,
                         ])
                     with dpg.group():
+                        dpg.add_text(
+                            f"mask center: ({self.mask_x}, {self.mask_y})",
+                            tag=self._tag("mask_text"),
+                        )
                         navigation_element([
                             self._mask_move_up,
                             self._mask_move_left,
@@ -138,11 +159,15 @@ class HAADFNavigator(MRSTEMNavigator):
                         ])
                         self.r_select = RangeSelector(
                             self.update_signal,
-                            vmax=self.sig_shape[0],
-                            vmin=0,
+                            vmax=64,
+                            vmin=1,
                             parent_tag=self._tag("stem_navigator"),
                             unique_prefix=self._tag("mask_ri"),
                         )
                         self.r_select.render()
                         dpg.add_button(label="compute", callback=self.compute)
+        with dpg.item_handler_registry() as handler:
+            # dpg.add_item_visible_handler(callback=lambda: self.update())
+            dpg.add_item_resize_handler(callback=lambda: self.update())
+        dpg.bind_item_handler_registry(window, handler)
         self.update()

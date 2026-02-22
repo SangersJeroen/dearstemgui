@@ -32,21 +32,25 @@ class MRSTEMNavigator:
         if self.measurement.pos_y_idx > 0:
             self.measurement.pos_y_idx -= 1
         self.measurement.update_open()
+        self.ui_update()
 
     def _move_down(self) -> None:
         if self.measurement.pos_y_idx < self.nav_shape[0] - 1:
             self.measurement.pos_y_idx += 1
         self.measurement.update_open()
+        self.ui_update()
 
     def _move_left(self) -> None:
         if self.measurement.pos_x_idx > 0:
             self.measurement.pos_x_idx -= 1
         self.measurement.update_open()
+        self.ui_update()
 
     def _move_right(self) -> None:
         if self.measurement.pos_x_idx < self.nav_shape[1] - 1:
             self.measurement.pos_x_idx += 1
         self.measurement.update_open()
+        self.ui_update()
 
     def update_signal(self) -> None:
         roi = np.zeros(self.nav_shape, dtype=bool)
@@ -60,6 +64,9 @@ class MRSTEMNavigator:
 
     def update(self) -> None:
         self.signal_plot.update()
+        self.ui_update()
+
+    def ui_update(self):
         dpg.set_value(
             self._tag("position_text"),
             f"Position: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
