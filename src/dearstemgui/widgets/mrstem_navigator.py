@@ -4,7 +4,7 @@ from libertem.udf.raw import PickUDF
 import numpy as np
 
 from dearstemgui.logic.measurement import EMPAD_Measurements
-from dearstemgui.widgets.elements import navigation_element
+from dearstemgui.widgets.elements import ImPlotElement, navigation_element
 
 
 class MRSTEMNavigator:
@@ -26,18 +26,11 @@ class MRSTEMNavigator:
         self.vmax: float = np.inf
         self.plot_log: bool = False
 
-        self.signal_rgba: np.ndarray = np.zeros((*self.nav_shape, 4), dtype=np.float32)
-        self.signal_rgba[:, :, 3] = 1.0
-
-    def _setup_textures(self) -> None:
-        with dpg.texture_registry():
-            dpg.add_raw_texture(
-                width=self.sig_shape[1],
-                height=self.sig_shape[0],
-                default_value=self.signal_rgba.flatten(),
-                format=dpg.mvFormat_Float_rgba,
-                tag=self._tag("signal_texture"),
-            )
+        self.signal_plot: ImPlotElement = ImPlotElement(
+            shape=self.sig_shape,
+            tag_prefix=self.tag_prefix + "_signal_image",
+            parent_tag=self._tag("signal_wrapper"),
+        )
 
     def _tag(self, tag: str) -> str:
         return self.tag_prefix + tag + self.tag_suffix
@@ -74,45 +67,30 @@ class MRSTEMNavigator:
         result = self.ctx.run_udf(dataset=self.ds, udf=pick_udf, roi=roi)
         signal_data = np.array(result["intensity"].data[0].reshape(self.sig_shape))
 
-        if self.plot_log:
-            signal_data = np.log(signal_data - signal_data.min() + 1)
-
         self.vmax = float(dpg.get_value(self._tag("vmax")))
-        signal_data = np.where(signal_data > self.vmax, self.vmax, signal_data)
-
-        signal_norm = (signal_data - signal_data.min()) / (
-            signal_data.max() - signal_data.min() + 1e-10
-        )
-        signal_rgba = np.zeros((*self.sig_shape, 4), dtype=np.float32)
-        signal_rgba[:, :, 0] = signal_norm  # R
-        signal_rgba[:, :, 1] = signal_norm  # G
-        signal_rgba[:, :, 2] = signal_norm  # B
-        signal_rgba[:, :, 3] = 1.0  # A
-        self.signal_rgba = signal_rgba
+        self.signal_plot.update(data=signal_data)
         self._push_update()
 
     def _push_update(self) -> None:
-        dpg.set_value(self._tag("signal_texture"), self.signal_rgba.flatten())
+        self.signal_plot.update()
         dpg.set_value(
             self._tag("position_text"),
             f"Position: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
         )
 
     def render(self) -> None:
-        self._setup_textures()
         with dpg.window(
             tag=self._tag("stem_navigator"),
             label=str(self.measurement.index) + " Navigator",
             no_scrollbar=True,
         ):
-            with dpg.child_window(no_scrollbar=True):
+            with dpg.child_window(no_scrollbar=True, tag=self._tag("signal_wrapper")):
                 dpg.add_text(
                     f"Position: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
                     tag=self._tag("position_text"),
                 )
-                dpg.add_image(
-                    texture_tag=self._tag("signal_texture"),
-                )
+                self.signal_plot.render()
+
             with dpg.child_window(no_scrollbar=True):
                 with dpg.group(horizontal=True):
                     navigation_element([

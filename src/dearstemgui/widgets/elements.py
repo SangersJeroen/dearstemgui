@@ -42,12 +42,13 @@ class ImPlotElement(object):
         parent_tag: str
     ) -> None:
         super().__init__()
+        self.data: np.ndarray = np.zeros(shape)
 
         self.sig_width: int = shape[1]
         self.sig_height: int = shape[0]
 
         self.vmax: float = np.inf
-        self.vmin: float = -np.inf
+        self.vmin: float = 0
         self.log: bool = False
 
         self.im_rgba = np.zeros((self.sig_height, self.sig_width, 4), dtype=np.float32)
@@ -65,23 +66,27 @@ class ImPlotElement(object):
                 height=self.sig_height,
                 default_value=self.im_rgba.flatten(),
                 format=dpg.mvFormat_Float_rgba,
-                tag="implot_texture",
+                tag=self.texture_tag,
             )
 
     def render(self):
+        width, height = dpg.get_item_rect_size(self.parent_tag)
         with dpg.child_window(no_scrollbar=True):
-            with dpg.drawlist():
+            with dpg.drawlist(width=width, height=height, tag=self.draw_list_tag):
                 pass
 
-
     def normalize(self, data: np.ndarray) -> np.ndarray:
-        norm_data = (data - self.vmin) / (self.vmax - self.vmin + 1e-10)
+        norm_data = np.where(data > self.vmax, self.vmax, data)
+        norm_data = np.where(norm_data < self.vmin, self.vmin, norm_data)
+
+        dmin, dmax = norm_data.min(), norm_data.max()
+        norm_data = (data - dmin) / (dmax - dmin + 1e-10)
         if self.log:
             norm_data = np.log(norm_data + 1)
         return norm_data
 
-    def update_texture(self, data: None | np.ndarray = None) -> None:
-        norm_data = self.normalize(self.data) if data is None else self.normalize(data)
+    def update_texture(self) -> None:
+        norm_data = self.normalize(self.data)
         self.im_rgba[:, :, 0] = norm_data
         self.im_rgba[:, :, 1] = norm_data
         self.im_rgba[:, :, 2] = norm_data
@@ -89,8 +94,12 @@ class ImPlotElement(object):
         dpg.set_value(self.texture_tag, self.im_rgba.flatten())
 
     def update(self, data: None | np.ndarray = None) -> None:
+        if data is not None:
+            self.data = data
         self.update_texture()
+
         draw_list_tag: str = self.draw_list_tag
+        width, height = dpg.get_item_rect_size(self.parent_tag)
 
         dpg.set_item_width(draw_list_tag, width)
         dpg.set_item_height(draw_list_tag, height)
@@ -108,10 +117,9 @@ class ImPlotElement(object):
         texture_max = (width, height)
 
         dpg.draw_image(
-            texture_tag='',
+            texture_tag=self.texture_tag,
             pmin=texture_min,
             pmax=texture_max,
-            tag='',
             parent=draw_list_tag,
         )
 
