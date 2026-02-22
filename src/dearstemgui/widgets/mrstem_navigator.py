@@ -23,9 +23,6 @@ class MRSTEMNavigator:
         self.nav_shape: tuple[int, int] = self.ds.shape.nav
         self.sig_shape: tuple[int, int] = self.ds.shape.sig
 
-        self.vmax: float = np.inf
-        self.plot_log: bool = False
-
         self.signal_plot: ImPlotElement
 
     def _tag(self, tag: str) -> str:
@@ -60,9 +57,8 @@ class MRSTEMNavigator:
         signal_data = np.array(result["intensity"].data[0].reshape(self.sig_shape))
 
         self.signal_plot.update(data=signal_data)
-        self._push_update()
 
-    def _push_update(self) -> None:
+    def update(self) -> None:
         self.signal_plot.update()
         dpg.set_value(
             self._tag("position_text"),
@@ -95,4 +91,4 @@ class MRSTEMNavigator:
                     f"Position: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
                     tag=self._tag("position_text"),
                 )
-        self.update_signal()
+        self.update()
