@@ -4,7 +4,7 @@ from libertem.udf.raw import PickUDF
 import numpy as np
 
 from dearstemgui.logic.measurement import EMPAD_Measurements
-from dearstemgui.widgets.elements import ImPlotElement, navigation_element
+from dearstemgui.widgets import ImPlotElement, navigation_element
 
 
 class MRSTEMNavigator:
@@ -60,6 +60,7 @@ class MRSTEMNavigator:
         result = self.ctx.run_udf(dataset=self.ds, udf=pick_udf, roi=roi)
         signal_data = np.array(result["intensity"].data[0].reshape(self.sig_shape))
 
+        self.signal_plot.range_slider.update()
         self.signal_plot.update(data=signal_data)
 
     def update(self) -> None:

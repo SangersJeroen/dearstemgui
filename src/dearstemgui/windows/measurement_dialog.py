@@ -1,7 +1,7 @@
 from typing import Callable
 import dearpygui.dearpygui as dpg
 from dearstemgui.app_state_singleton import APP_STATE
-from dearstemgui.widgets.file_dialogs import open_file_dialog
+from dearstemgui.windows.open_file_dialog import open_file_dialog
 
 
 def measurement_selector(launch_callback: Callable) -> None:

@@ -3,12 +3,12 @@ from libertem.api import Context
 import numpy as np
 
 from dearstemgui.logic.measurement import EMPAD_Measurements
-from dearstemgui.widgets.elements import (
+from dearstemgui.widgets import (
     ImPlotElement,
     RangeSelector,
     navigation_element,
 )
-from dearstemgui.widgets.mrstem_navigator import MRSTEMNavigator
+from dearstemgui.windows.analyses.signal_navigator import MRSTEMNavigator
 
 
 class HAADFNavigator(MRSTEMNavigator):
@@ -25,26 +25,31 @@ class HAADFNavigator(MRSTEMNavigator):
         self.mask_ro: int = 30
 
         self.result_plot: ImPlotElement
+        self.result_data = np.random.random(size=self.nav_shape)
 
     def _mask_move_up(self) -> None:
         if self.mask_y > 0:
             self.mask_y -= 1
         self.update_mask()
+        self.ui_update()
 
     def _mask_move_down(self) -> None:
         if self.mask_y < self.sig_shape[0] - 1:
             self.mask_y += 1
         self.update_mask()
+        self.ui_update()
 
     def _mask_move_left(self) -> None:
         if self.mask_x > 0:
             self.mask_x -= 1
         self.update_mask()
+        self.ui_update()
 
     def _mask_move_right(self) -> None:
         if self.mask_x < self.sig_shape[1] - 1:
             self.mask_x += 1
         self.update_mask()
+        self.ui_update()
 
     def update_signal(self) -> None:
         super().update_signal()
@@ -91,11 +96,21 @@ class HAADFNavigator(MRSTEMNavigator):
 
         result = self.ctx.run_udf(dataset=self.ds, udf=udf)
         result_data = np.array(result["intensity"].data.reshape(self.nav_shape))
+        self.result_data = result_data
         self.result_plot.update(data=result_data)
 
     def update_result(self) -> None:
-        self.result_plot.update()
-        self.result_plot._reset_slider()
+        self.result_plot.range_slider.update()
+        self.result_plot.update(self.result_data)
+        dpg.draw_circle(
+            (
+                self.mask_x * self.result_plot.scale_x,
+                self.mask_y * self.result_plot.scale_y,
+            ),
+            2,
+            color=(180, 0, 0),
+            parent=self.result_plot.draw_list_tag,
+        )
 
     def ui_update(self):
         super().ui_update()
@@ -103,17 +118,24 @@ class HAADFNavigator(MRSTEMNavigator):
             self._tag("position_text"),
             f"Position: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
         )
+        dpg.set_value(
+            self._tag("mask_text"),
+            f"mask center: ({self.mask_x}, {self.mask_y})",
+        )
+
         pwidth = dpg.get_item_rect_size(self._tag("controls"))[0]
         mnav_width = dpg.get_item_rect_size(self._tag("mask_move"))[0]
         snav_width = dpg.get_item_rect_size(self._tag("sig_move"))[0]
+
+        pwidth = max(1, pwidth)
         frac = (pwidth - mnav_width - snav_width) / pwidth
         self.r_select.width_fraction = frac
         self.r_select.update()
 
     def update(self) -> None:
+        self.ui_update()
         self.update_signal()
         self.update_result()
-        self.ui_update()
 
     def render(self) -> None:
         with dpg.window(
@@ -129,18 +151,18 @@ class HAADFNavigator(MRSTEMNavigator):
                     shape=self.sig_shape,
                     tag_prefix=self.tag_prefix + "_signal_image",
                     parent_tag=self._tag("stem_navigator"),
-                    size_fraction=(0.5, 1.0),
+                    size_fraction=(0.5, 0.0),
                 )
                 self.signal_plot.render()
                 self.result_plot = ImPlotElement(
                     shape=self.nav_shape,
                     tag_prefix=self.tag_prefix + "_result_image",
                     parent_tag=self._tag("stem_navigator"),
-                    size_fraction=(0.5, 1.0),
+                    size_fraction=(0.5, 0.0),
                 )
                 self.result_plot.render()
 
-            with dpg.child_window(no_scrollbar=True, tag=self._tag('controls')):
+            with dpg.child_window(no_scrollbar=True, tag=self._tag("controls")):
                 with dpg.group(horizontal=True):
                     with dpg.group():
                         dpg.add_text(
@@ -172,15 +194,14 @@ class HAADFNavigator(MRSTEMNavigator):
                         )
                         self.r_select = RangeSelector(
                             self.update_signal,
-                            vmax=64,
-                            vmin=1,
+                            tag=self._tag("mask_ri"),
                             parent_tag=self._tag("stem_navigator"),
-                            unique_prefix=self._tag("mask_ri"),
+                            init_range=(0, 75),
                         )
-                        self.r_select.render()
                         dpg.add_button(label="compute", callback=self.compute)
+
         with dpg.item_handler_registry() as handler:
-            # dpg.add_item_visible_handler(callback=lambda: self.update())
             dpg.add_item_resize_handler(callback=lambda: self.update())
         dpg.bind_item_handler_registry(window, handler)
+
         self.update()

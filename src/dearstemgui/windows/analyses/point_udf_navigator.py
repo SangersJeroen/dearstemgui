@@ -3,8 +3,8 @@ from libertem.api import Context
 import numpy as np
 
 from dearstemgui.logic.measurement import EMPAD_Measurements
-from dearstemgui.widgets.elements import navigation_element
-from dearstemgui.widgets.mrstem_navigator import MRSTEMNavigator
+from dearstemgui.widgets import navigation_element
+from dearstemgui.windows.analyses.signal_navigator import MRSTEMNavigator
 
 
 class PointSignalNavigator(MRSTEMNavigator):

@@ -3,11 +3,11 @@ from libertem.api import Context
 import numpy as np
 
 from dearstemgui.logic.measurement import EMPAD_Measurements
-from dearstemgui.widgets.elements import (
+from dearstemgui.widgets import (
     ImPlotElement,
     navigation_element,
 )
-from dearstemgui.widgets.haadf_udf_navigator import HAADFNavigator
+from dearstemgui.windows.analyses.haadf_udf_navigator import HAADFNavigator
 
 
 class ABFNavigator(HAADFNavigator):

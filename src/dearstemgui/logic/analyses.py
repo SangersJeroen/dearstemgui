@@ -4,12 +4,12 @@ from functools import partial
 from libertem.api import Context
 
 from dearstemgui.app_state_singleton import APP_STATE
-from dearstemgui.widgets.abf_udf_navigator import ABFNavigator
-from dearstemgui.widgets.haadf_udf_navigator import HAADFNavigator
-from dearstemgui.widgets.measurement_dialog import measurement_selector
+from dearstemgui.windows.analyses.abf_udf_navigator import ABFNavigator
+from dearstemgui.windows.analyses.haadf_udf_navigator import HAADFNavigator
+from dearstemgui.windows.measurement_dialog import measurement_selector
 from dearstemgui.logic.measurement import EMPAD_Measurements
-from dearstemgui.widgets.mrstem_navigator import MRSTEMNavigator
-from dearstemgui.widgets.point_udf_navigator import PointSignalNavigator
+from dearstemgui.windows.analyses.signal_navigator import MRSTEMNavigator
+from dearstemgui.windows.analyses.point_udf_navigator import PointSignalNavigator
 
 
 def analyses_router_callback(
@@ -25,7 +25,7 @@ def analyses_router_callback(
             instancer = MRSTEMNavigator
         case "abf":
             instancer = ABFNavigator
-        case 'point':
+        case "point":
             instancer = PointSignalNavigator
         case _:
             print(user_data)

@@ -2,8 +2,8 @@ from libertem.api import Context
 
 from dearstemgui.app_state_singleton import APP_STATE
 from dearstemgui.logic.measurement import EMPAD_Measurements
-from dearstemgui.widgets.haadf_udf_navigator import HAADFNavigator
-from dearstemgui.widgets.mrstem_navigator import MRSTEMNavigator
+from dearstemgui.windows.analyses.haadf_udf_navigator import HAADFNavigator
+from dearstemgui.windows.analyses.signal_navigator import MRSTEMNavigator
 
 
 def file_open_router(sender: str, data: dict) -> None:
