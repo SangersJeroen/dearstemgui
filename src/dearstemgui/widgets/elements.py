@@ -5,13 +5,14 @@ import numpy as np
 
 def navigation_element(
     callbacks: list[Callable[..., None]],
+    tag: str,
     btn_size: int = 40,
     pad: int = 10,
 ) -> None:
 
     mwidth: int = btn_size * 4 + 2 * pad
     mheight: int = btn_size * 3 + 2 * pad
-    with dpg.child_window(width=mwidth, height=mheight, no_scrollbar=True):
+    with dpg.child_window(width=mwidth, height=mheight, no_scrollbar=True, tag=tag):
         with dpg.group(horizontal=True):
             dpg.add_spacer(width=btn_size + pad)
             dpg.add_button(
@@ -35,10 +36,6 @@ def navigation_element(
 
 
 class RangeSelector:
-    BAR_Y = 30
-    HANDLE_RADIUS = 6
-    MIN_GAP = 0.001  # minimum value gap
-
     def __init__(
         self,
         update_callback: Callable[..., None],
@@ -46,19 +43,29 @@ class RangeSelector:
         vmin: float,
         parent_tag: str,
         unique_prefix: str,
+        width_fraction: float = 1.0,
+        height_fraction: float = 1.0,
     ) -> None:
+
         self.vmax = vmax
         self.vmin = vmin
 
         self.cmin = vmin
         self.cmax = vmax
 
+        self.width_fraction = width_fraction
+        self.height_fraction = height_fraction
+
         self.width = 1.0
-        self.bar_width = 1.0
+        self.height = 1.0
         self.dragging: Literal["min", "max", "none"] = "none"
 
         self.parent_tag = parent_tag
         self.unique_prefix = unique_prefix
+
+        self.bar_y: int = 20
+        self.handle_radius: int = 6
+        self.min_gap: int = 1
 
         self.update_callback = update_callback
 
@@ -70,10 +77,14 @@ class RangeSelector:
     # ------------------------------------------------------------------ mapping
 
     def value_to_x(self, v: float) -> float:
-        return (v - self.vmin) / (self.vmax - self.vmin) * self.bar_width
+        return (v - self.vmin) / (
+            self.vmax - self.vmin
+        ) * self.width * 0.8 + 0.05 * self.width
 
     def x_to_value(self, x: float) -> float:
-        return self.vmin + (x / self.bar_width) * (self.vmax - self.vmin)
+        return self.vmin + ((x - 0.05 * self.width) / (self.width * 0.8)) * (
+            self.vmax - self.vmin
+        )
 
     @property
     def min_pos(self) -> float:
@@ -105,9 +116,9 @@ class RangeSelector:
     def mouse_down(self, sender, app_data):
         x = self._mouse_x_local()
 
-        if abs(x - self.min_pos) < self.HANDLE_RADIUS * 2:
+        if abs(x - self.min_pos) < self.handle_radius * 2:
             self.dragging = "min"
-        elif abs(x - self.max_pos) < self.HANDLE_RADIUS * 2:
+        elif abs(x - self.max_pos) < self.handle_radius * 2:
             self.dragging = "max"
 
     def mouse_up(self, sender, app_data):
@@ -117,32 +128,32 @@ class RangeSelector:
         if self.dragging == "none":
             return
 
-        x = max(0.0, min(self.bar_width, self._mouse_x_local()))
+        x = max(self.width * 0.1, min(self.width * 0.9, self._mouse_x_local()))
         value = self.x_to_value(x)
 
         if self.dragging == "min":
-            self.cmin = min(value, self.cmax - self.MIN_GAP)
+            self.cmin = min(value, self.cmax - self.min_gap)
         else:
-            self.cmax = max(value, self.cmin + self.MIN_GAP)
+            self.cmax = max(value, self.cmin + self.min_gap)
         self.update()
         self.update_callback()
 
     # ------------------------------------------------------------------ drawing
 
     def update(self):
-        self.width = max(1.0, dpg.get_item_rect_size(self.parent_tag)[0])
-        width = self.width
-        self.bar_width = width * 0.8 - 20
-        bar_width = self.bar_width
-        dpg.set_item_width(self._tag("_drawlist"), width * 0.8)
-        dpg.set_item_width(self._tag("_slider_window"), width * 0.9)
+        pwidth, pheight = dpg.get_item_rect_size(self.parent_tag)
+        self.width = max(1.0, pwidth * self.width_fraction)
+        # self.bar_width = self.width * 0.8 - 20
+
+        dpg.set_item_width(self._tag("_drawlist"), self.width * 0.9)
+        dpg.set_item_width(self._tag("_slider_window"), self.width)
 
         dpg.delete_item(self._tag("_drawlist"), children_only=True)
 
         # background
         dpg.draw_line(
-            (0, self.BAR_Y),
-            (bar_width, self.BAR_Y),
+            (self.width * 0.05, self.bar_y),
+            (self.width * 0.85, self.bar_y),
             color=(150, 150, 150),
             thickness=4,
             parent=self._tag("_drawlist"),
@@ -150,8 +161,8 @@ class RangeSelector:
 
         # active range
         dpg.draw_line(
-            (self.min_pos, self.BAR_Y),
-            (self.max_pos, self.BAR_Y),
+            (self.min_pos, self.bar_y),
+            (self.max_pos, self.bar_y),
             color=(100, 180, 255),
             thickness=6,
             parent=self._tag("_drawlist"),
@@ -160,8 +171,8 @@ class RangeSelector:
         # handles
         for x in (self.min_pos, self.max_pos):
             dpg.draw_circle(
-                (x, self.BAR_Y),
-                self.HANDLE_RADIUS,
+                (x, self.bar_y),
+                self.handle_radius,
                 fill=(255, 255, 255),
                 color=(0, 0, 0),
                 parent=self._tag("_drawlist"),
@@ -271,11 +282,21 @@ class ImPlotElement(object):
 
     def render(self):
         width, height = dpg.get_item_rect_size(self.parent_tag)
-        with dpg.child_window(no_scrollbar=True, tag=self.draw_list_tag + "_child"):
+        with dpg.child_window(no_scrollbar=True):
             with dpg.drawlist(width=width, height=width, tag=self.draw_list_tag):
                 pass
-            dpg.add_button(label="toggle log", callback=self._toggle_log, pos=(0, 0))
-            self.range_slider.render()
+            with (
+                dpg.collapsing_header(
+                    label="Image Options", tag=self.draw_list_tag + "_child"
+                ),
+                dpg.group(),
+            ):
+                dpg.add_button(
+                    label="toggle log",
+                    callback=self._toggle_log,
+                    tag=self.draw_list_tag + "_log",
+                )
+                self.range_slider.render()
 
     def normalize(self, data: np.ndarray) -> np.ndarray:
         norm_data = np.log(data + 1) if self.log else data

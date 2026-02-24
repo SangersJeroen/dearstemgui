@@ -78,7 +78,9 @@ class HAADFNavigator(MRSTEMNavigator):
         )
 
     def compute(self) -> None:
-        print(f'compute, {self.mask_x}, {self.mask_y}, {self.r_select.cmin}, {self.r_select.cmax}')
+        print(
+            f"compute, {self.mask_x}, {self.mask_y}, {self.r_select.cmin}, {self.r_select.cmax}"
+        )
         udf = self.ctx.create_ring_analysis(
             dataset=self.ds,
             cx=self.mask_x,
@@ -101,6 +103,11 @@ class HAADFNavigator(MRSTEMNavigator):
             self._tag("position_text"),
             f"Position: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
         )
+        pwidth = dpg.get_item_rect_size(self._tag("controls"))[0]
+        mnav_width = dpg.get_item_rect_size(self._tag("mask_move"))[0]
+        snav_width = dpg.get_item_rect_size(self._tag("sig_move"))[0]
+        frac = (pwidth - mnav_width - snav_width) / pwidth
+        self.r_select.width_fraction = frac
         self.r_select.update()
 
     def update(self) -> None:
@@ -113,7 +120,7 @@ class HAADFNavigator(MRSTEMNavigator):
             tag=self._tag("stem_navigator"),
             label=str(self.measurement.index) + " STEM Navigator",
             no_scrollbar=True,
-            min_size=(100, 100),
+            min_size=(800, 700),
         ) as window:
             with dpg.group(
                 horizontal=True,
@@ -133,30 +140,36 @@ class HAADFNavigator(MRSTEMNavigator):
                 )
                 self.result_plot.render()
 
-            with dpg.child_window(no_scrollbar=True):
+            with dpg.child_window(no_scrollbar=True, tag=self._tag('controls')):
                 with dpg.group(horizontal=True):
                     with dpg.group():
                         dpg.add_text(
                             f"Postition: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
                             tag=self._tag("position_text"),
                         )
-                        navigation_element([
-                            self._move_up,
-                            self._move_left,
-                            self._move_right,
-                            self._move_down,
-                        ])
+                        navigation_element(
+                            [
+                                self._move_up,
+                                self._move_left,
+                                self._move_right,
+                                self._move_down,
+                            ],
+                            tag=self._tag("sig_move"),
+                        )
                     with dpg.group():
                         dpg.add_text(
                             f"mask center: ({self.mask_x}, {self.mask_y})",
                             tag=self._tag("mask_text"),
                         )
-                        navigation_element([
-                            self._mask_move_up,
-                            self._mask_move_left,
-                            self._mask_move_right,
-                            self._mask_move_down,
-                        ])
+                        navigation_element(
+                            [
+                                self._mask_move_up,
+                                self._mask_move_left,
+                                self._mask_move_right,
+                                self._mask_move_down,
+                            ],
+                            tag=self._tag("mask_move"),
+                        )
                         self.r_select = RangeSelector(
                             self.update_signal,
                             vmax=64,
