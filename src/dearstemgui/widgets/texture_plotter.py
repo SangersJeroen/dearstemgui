@@ -44,10 +44,10 @@ class ImPlotElement(object):
 
     def _toggle_log(self) -> None:
         if self.log:  # was log
-            self.range_slider.set_limits(0.0, self.data.max())
+            self.range_slider.set_limits(self.data.min(), self.data.max())
         else:
             self.range_slider.set_limits(
-                1.0, np.log(self.data.max() - self.data.min() + 1)
+                1, np.log(self.data.max() - self.data.min() + 1)
             )
         self.log = not self.log
         self._reset_slider()
@@ -64,7 +64,7 @@ class ImPlotElement(object):
 
     def render(self):
         width, height = dpg.get_item_rect_size(self.parent_tag)
-        with dpg.child_window(no_scrollbar=True, width=width - 20, height=width):
+        with dpg.child_window(no_scrollbar=True, width=width, height=width):
             with (
                 dpg.collapsing_header(
                     label="Image Options", tag=self.draw_list_tag + "_child"
@@ -87,9 +87,7 @@ class ImPlotElement(object):
                     init_range=(0, 1e5),
                     width_fraction=0.8,
                 )
-            with dpg.drawlist(
-                width=width - 20, height=width - 20, tag=self.draw_list_tag
-            ):
+            with dpg.drawlist(width=width, height=width, tag=self.draw_list_tag):
                 pass
 
         self.update()

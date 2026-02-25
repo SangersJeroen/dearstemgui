@@ -96,21 +96,24 @@ class HAADFNavigator(MRSTEMNavigator):
 
         result = self.ctx.run_udf(dataset=self.ds, udf=udf)
         result_data = np.array(result["intensity"].data.reshape(self.nav_shape))
-        self.result_data = result_data
+
+        self.result_plot.range_slider.update()
         self.result_plot.update(data=result_data)
 
     def update_result(self) -> None:
-        self.result_plot.range_slider.update()
-        self.result_plot.update(self.result_data)
+        self.result_plot.update()
         dpg.draw_circle(
             (
-                self.mask_x * self.result_plot.scale_x,
-                self.mask_y * self.result_plot.scale_y,
+                self.measurement.pos_x_idx * self.result_plot.scale_x,
+                self.measurement.pos_y_idx * self.result_plot.scale_y,
             ),
             2,
             color=(180, 0, 0),
             parent=self.result_plot.draw_list_tag,
         )
+
+    def move_dot(self) -> None:
+        self.update_result()
 
     def ui_update(self):
         super().ui_update()

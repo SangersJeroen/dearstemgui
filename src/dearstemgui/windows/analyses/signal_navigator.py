@@ -33,24 +33,31 @@ class MRSTEMNavigator:
             self.measurement.pos_y_idx -= 1
         self.measurement.update_open()
         self.ui_update()
+        self.move_dot()
 
     def _move_down(self) -> None:
         if self.measurement.pos_y_idx < self.nav_shape[0] - 1:
             self.measurement.pos_y_idx += 1
         self.measurement.update_open()
         self.ui_update()
+        self.move_dot()
 
     def _move_left(self) -> None:
         if self.measurement.pos_x_idx > 0:
             self.measurement.pos_x_idx -= 1
         self.measurement.update_open()
         self.ui_update()
+        self.move_dot()
 
     def _move_right(self) -> None:
         if self.measurement.pos_x_idx < self.nav_shape[1] - 1:
             self.measurement.pos_x_idx += 1
         self.measurement.update_open()
         self.ui_update()
+        self.move_dot()
+
+    def move_dot(self) -> None:
+        pass
 
     def update_signal(self) -> None:
         roi = np.zeros(self.nav_shape, dtype=bool)
@@ -89,12 +96,15 @@ class MRSTEMNavigator:
 
             with dpg.child_window(no_scrollbar=True):
                 with dpg.group(horizontal=True):
-                    navigation_element([
-                        self._move_up,
-                        self._move_left,
-                        self._move_right,
-                        self._move_down,
-                    ])
+                    navigation_element(
+                        [
+                            self._move_up,
+                            self._move_left,
+                            self._move_right,
+                            self._move_down,
+                        ],
+                        tag=self._tag("sig_move"),
+                    )
                 dpg.add_text(
                     f"Position: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
                     tag=self._tag("position_text"),
