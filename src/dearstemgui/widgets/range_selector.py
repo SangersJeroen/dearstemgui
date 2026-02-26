@@ -16,7 +16,6 @@ class RangeSelector(object):
 
         self.cmin: float = init_range[0]
         self.cmax: float = init_range[1]
-        self.min_gap: int = 1
 
         self.update_callback = update_callback
 
@@ -29,15 +28,11 @@ class RangeSelector(object):
         self.bar_width: float = 1
         self.height = height
 
-        self.render()
-        self.set_limits(vmin=init_range[0], vmax=init_range[1])
-        self.update()
-        print(f'RangeSelector with tag: {self._tag} created')
-
+        print(f"RangeSelector with tag: {self._tag} created")
 
     def value_to_pos(self, value: float) -> float:
         if self.vmax - self.vmin == 0:
-            return 1.
+            return 1.0
         return (value - self.vmin) / (self.vmax - self.vmin) * self.bar_width
 
     def pos_to_value(self, pos: float) -> float:
@@ -67,16 +62,18 @@ class RangeSelector(object):
         self.update()
 
     def _mouse_x_local(self) -> float:
-        mx, _ = dpg.get_mouse_pos()
-        x0, _ = dpg.get_item_rect_min(self._tag + "_drawlist")
-        return mx - x0
+        mx, _ = dpg.get_drawing_mouse_pos()
+        return mx
 
     def mouse_down(self, sender, app_data):
         x = self._mouse_x_local()
+        print(x)
 
         if abs(x - self.min_pos) < 6 * 2:
+            print("clicked min")
             self.dragging = "min"
         elif abs(x - self.max_pos) < 6 * 2:
+            print("clicked max")
             self.dragging = "max"
 
     def mouse_up(self, sender, app_data):
@@ -87,26 +84,27 @@ class RangeSelector(object):
             return
 
         x = max(0, min(self.bar_width, self._mouse_x_local()))
+        print(f"dragging mouse {x}")
         value = self.pos_to_value(x)
 
         if self.dragging == "min":
-            self.cmin = min(value, self.cmax - self.min_gap)
+            self.cmin = min(value, self.cmax)
         else:
-            self.cmax = max(value, self.cmin + self.min_gap)
+            self.cmax = max(value, self.cmin)
         self.update()
         self.update_callback()
 
     def update(self) -> None:
         pwidth, _ = dpg.get_item_rect_size(self._parent_tag)
         width = pwidth * self.width_fraction
-        self.bar_width = width - 120
+        self.bar_width = width - 140
 
         if (maxv := float(dpg.get_value(self._tag + "_upper_bound"))) < self.cmax:
             self.cmax = maxv
         if (minv := float(dpg.get_value(self._tag + "_lower_bound"))) > self.cmin:
             self.cmin = minv
 
-        dpg.set_item_width(self._tag + "_drawlist", width - 120)
+        dpg.set_item_width(self._tag + "_drawlist", width - 140)
         dpg.delete_item(self._tag + "_drawlist", children_only=True)
 
         dpg.draw_line(
@@ -131,6 +129,7 @@ class RangeSelector(object):
                 color=(180, 0, 0),
                 parent=self._tag + "_drawlist",
             )
+        self.update_callback()
 
     def render(self):
         pwidth, _ = dpg.get_item_rect_size(self._parent_tag)
@@ -146,7 +145,9 @@ class RangeSelector(object):
             )
             dpg.add_spacer(width=10)
             dpg.add_drawlist(
-                width=self.bar_width, height=self.height, tag=self._tag + "_drawlist"
+                width=self.bar_width,
+                height=self.height,
+                tag=self._tag + "_drawlist",
             )
             dpg.add_spacer(width=10)
             dpg.add_input_text(
@@ -165,4 +166,5 @@ class RangeSelector(object):
             self._tag + "_drawlist",
             self._tag + "_handlers",
         )
+        self.set_limits(vmin=self.cmin, vmax=self.cmax)
         self.update()

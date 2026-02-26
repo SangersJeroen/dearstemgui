@@ -90,6 +90,9 @@ class EMPAD_Measurements:
         self.adf: np.ndarray | None = None
         self.abf: np.ndarray | None = None
 
+        # Center Reference
+        self.reference_center = tuple([i/2 for i in self.dataset.shape.sig])
+
         # Rigid shift signals
         self.rigid_shift_sensor_axis_0: np.ndarray | None = None
         self.rigid_shift_sensor_axis_1: np.ndarray | None = None

@@ -1,5 +1,6 @@
+from typing import Any
 import dearpygui.dearpygui as dpg
-from libertem.api import Context
+from libertem.api import UDF, Context
 from libertem.udf.raw import PickUDF
 import numpy as np
 
@@ -18,24 +19,70 @@ class RigidShiftNavigator(MRSTEMNavigator):
     ) -> None:
         super().__init__(measurement, ctx, tag_suffix)
         self.tag_prefix: str = str(measurement.index) + "_rigid_nav"
+        self._live: bool = False
+        self._edges: bool = False
+
+    def _toggle_live(self, sender: int, app_data: bool, user_data: Any) -> None:
+        self._live = app_data
+
+    def _toggle_edges(self, sender: int, app_data: bool, user_data: Any) -> None:
+        self._edges = app_data
+
+    @property
+    def method(self) -> str:
+        return dpg.get_value(self._tag("_method_selector"))
 
     def update_signal(self) -> None:
         super().update_signal()
+        print(f"update signal: live {self._live}, method: {self.method}")
         # TODO: Update crosshair, deviation arrow
+        if self._live and self.method in [
+            "fit circle",
+            "cross corr.",
+        ]:
+            result = self.ctx.run_udf(dataset=self.ds, udf=self.udf, roi=self.roi)
+            signal = np.array(result["rigid_deflection"].data[self.roi, :])
+            sy, sx = signal[0, :]
+
+            if self.method == 'fit circle':
+                sy += 64
+                sx += 64
+            if self.method == 'cross corr.':
+                sy += self.measurement.reference_center[0]
+                sx += self.measurement.reference_center[1]
+
+            dpg.draw_line(
+                (sx * self.signal_plot.scale_x - 10, sy * self.signal_plot.scale_y),
+                (sx * self.signal_plot.scale_x + 10, sy * self.signal_plot.scale_y),
+                thickness=2,
+                color=(180, 0, 0),
+                parent=self.signal_plot.draw_list_tag,
+            )
+            dpg.draw_line(
+                (sx * self.signal_plot.scale_x, sy * self.signal_plot.scale_y - 10),
+                (sx * self.signal_plot.scale_x, sy * self.signal_plot.scale_y + 10),
+                thickness=2,
+                color=(180, 0, 0),
+                parent=self.signal_plot.draw_list_tag,
+            )
 
     @property
-    def reference_frame(self) -> None:
+    def roi(self) -> np.ndarray:
         roi = np.zeros(self.nav_shape, dtype=bool)
         roi[
             dpg.get_value(self._tag("_y_idx_ref")),
             dpg.get_value(self._tag("_x_idx_ref")),
         ] = True
+        return roi
 
+    @property
+    def reference_frame(self) -> None:
         pick_udf = PickUDF()
-        result = self.ctx.run_udf(dataset=self.ds, udf=pick_udf, roi=roi)
+        result = self.ctx.run_udf(dataset=self.ds, udf=pick_udf, roi=self.roi)
         return np.array(result["intensity"].data[0].reshape(self.sig_shape))
 
-    def compute(self) -> None:
+    @property
+    def udf(self) -> UDF:
         method = dpg.get_value(self._tag("_method_selector"))
         use_edges = dpg.get_value(self._tag("_use_edges"))
         threshold = dpg.get_value(self._tag("_threshold"))
@@ -47,7 +94,11 @@ class RigidShiftNavigator(MRSTEMNavigator):
                 reference_frame=self.reference_frame, use_edges=use_edges
             )
         else:
-            dpg.popup('select method')
+            dpg.popup("select method")
+        return udf
+
+    def compute(self) -> None:
+        udf = self.udf
 
         result = self.ctx.run_udf(dataset=self.ds, udf=udf, progress=True, sync=True)
         rigid_shift_signal = np.array(
@@ -59,12 +110,39 @@ class RigidShiftNavigator(MRSTEMNavigator):
 
         self.sx_plot.update(data=self.sx_signal)
         self.sy_plot.update(data=self.sy_signal)
-        self.sx_plot.range_slider.update()
-        self.sy_plot.range_slider.update()
 
     def _use_curr_cbed_as_ref(self) -> None:
         dpg.set_value(self._tag("_x_idx_ref"), self.measurement.pos_x_idx)
         dpg.set_value(self._tag("_y_idx_ref"), self.measurement.pos_y_idx)
+
+    def update_result(self) -> None:
+        self.sx_plot.range_slider.update()
+        self.sx_plot.update()
+        self.sy_plot.range_slider.update()
+        self.sy_plot.update()
+        dpg.draw_circle(
+            (
+                self.measurement.pos_x_idx * self.sx_plot.scale_x,
+                self.measurement.pos_y_idx * self.sx_plot.scale_y,
+            ),
+            2,
+            color=(180, 0, 0),
+            parent=self.sx_plot.draw_list_tag,
+        )
+        dpg.draw_circle(
+            (
+                self.measurement.pos_x_idx * self.sy_plot.scale_x,
+                self.measurement.pos_y_idx * self.sy_plot.scale_y,
+            ),
+            2,
+            color=(180, 0, 0),
+            parent=self.sy_plot.draw_list_tag,
+        )
+
+    def update(self) -> None:
+        self.ui_update()
+        self.update_signal()
+        self.update_result()
 
     def render(self) -> None:
         with dpg.window(
@@ -102,6 +180,9 @@ class RigidShiftNavigator(MRSTEMNavigator):
                             f"Postition: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
                             tag=self._tag("position_text"),
                         )
+                        dpg.add_checkbox(
+                            label="live result", callback=self._toggle_live
+                        )
                         navigation_element(
                             [
                                 self._move_up,
@@ -118,8 +199,10 @@ class RigidShiftNavigator(MRSTEMNavigator):
                             tag=self._tag("_method_selector"),
                         )
                     with dpg.group(label="cross correlation options"):
-                        dpg.add_radio_button(
-                            label="use edges", tag=self._tag("_use_edges")
+                        dpg.add_checkbox(
+                            label="use edges",
+                            tag=self._tag("_use_edges"),
+                            callback=self._toggle_edges,
                         )
                         dpg.add_text("reference CBED")
                         dpg.add_input_int(

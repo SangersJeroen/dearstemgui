@@ -101,6 +101,7 @@ class HAADFNavigator(MRSTEMNavigator):
         self.result_plot.update(data=result_data)
 
     def update_result(self) -> None:
+        self.result_plot.range_slider.update()
         self.result_plot.update()
         dpg.draw_circle(
             (
@@ -201,6 +202,7 @@ class HAADFNavigator(MRSTEMNavigator):
                             parent_tag=self._tag("stem_navigator"),
                             init_range=(0, 75),
                         )
+                        self.r_select.render()
                         dpg.add_button(label="compute", callback=self.compute)
 
         with dpg.item_handler_registry() as handler:

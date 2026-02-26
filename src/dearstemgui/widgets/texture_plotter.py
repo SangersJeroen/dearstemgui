@@ -33,7 +33,13 @@ class ImPlotElement(object):
         self.draw_list_tag: str = tag_prefix + "_drawlist"
         self.parent_tag: str = parent_tag
 
-        self.range_slider: RangeSelector
+        self.range_slider: RangeSelector = RangeSelector(
+            update_callback=self.update_texture,
+            tag=self.draw_list_tag + "_slider",
+            parent_tag=self.draw_list_tag + "_child",
+            init_range=(0, 1e5),
+            width_fraction=0.8,
+        )
 
         with dpg.texture_registry():
             dpg.add_raw_texture(
@@ -60,7 +66,7 @@ class ImPlotElement(object):
         self.range_slider.cmin = self.data.min()
         self.range_slider.cmax = self.data.max()
         self.range_slider.set_limits(
-            vmin=int(self.data.min()), vmax=int(self.data.max())
+            vmin=int(self.data.min()-1), vmax=int(self.data.max()+1)
         )
         self.update()
 
@@ -84,13 +90,7 @@ class ImPlotElement(object):
                         label="reset",
                         callback=self._reset_slider,
                     )
-                self.range_slider = RangeSelector(
-                    update_callback=self.update_texture,
-                    tag=self.draw_list_tag + "_slider",
-                    parent_tag=self.draw_list_tag + "_child",
-                    init_range=(0, 1e5),
-                    width_fraction=0.8,
-                )
+                    self.range_slider.render()
             with dpg.drawlist(width=width, height=width, tag=self.draw_list_tag):
                 pass
 
