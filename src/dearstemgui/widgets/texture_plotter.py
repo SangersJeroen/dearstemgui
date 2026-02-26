@@ -19,6 +19,8 @@ class ImPlotElement(object):
 
         self.sig_width: int = shape[1]
         self.sig_height: int = shape[0]
+        self.aspect: float = self.sig_height / self.sig_width
+        print(f"initiating with aspect: {self.aspect}")
 
         self.log: bool = False
 
@@ -64,7 +66,9 @@ class ImPlotElement(object):
 
     def render(self):
         width, height = dpg.get_item_rect_size(self.parent_tag)
-        with dpg.child_window(no_scrollbar=True, width=width, height=width):
+        with dpg.child_window(
+            no_scrollbar=True, width=width, height=width * self.aspect
+        ):
             with (
                 dpg.collapsing_header(
                     label="Image Options", tag=self.draw_list_tag + "_child"
@@ -128,10 +132,10 @@ class ImPlotElement(object):
         window_tag = dpg.get_item_parent(draw_list_tag)
 
         dpg.set_item_width(window_tag, width)
-        dpg.set_item_height(window_tag, width)
+        dpg.set_item_height(window_tag, int(width * self.aspect))
 
         dpg.set_item_width(draw_list_tag, width)
-        dpg.set_item_height(draw_list_tag, width)
+        dpg.set_item_height(draw_list_tag, int(width * self.aspect))
 
         if dpg.does_item_exist(draw_list_tag):
             dpg.delete_item(draw_list_tag, children_only=True)
@@ -145,8 +149,8 @@ class ImPlotElement(object):
         self.scale_x = width / self.sig_width
         self.scale_y = height / self.sig_height
 
-        texture_min = (0, 10)
-        texture_max = (width, width)
+        texture_min = (0, 0)
+        texture_max = (width, width * self.aspect)
 
         dpg.draw_image(
             texture_tag=self.texture_tag,
