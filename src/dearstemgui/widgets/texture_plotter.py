@@ -52,10 +52,10 @@ class ImPlotElement(object):
 
     def _toggle_log(self) -> None:
         if self.log:  # was log
-            self.range_slider.set_limits(self.data.min(), self.data.max())
+            self.range_slider.set_limits(np.nanmin(self.data), np.nanmax(self.data))
         else:
             self.range_slider.set_limits(
-                1, np.log(self.data.max() - self.data.min() + 1)
+                1, np.log(np.nanmax(self.data) - np.nanmin(self.data) + 1)
             )
         self.log = not self.log
         self._reset_slider()
@@ -63,10 +63,10 @@ class ImPlotElement(object):
         self.update()
 
     def _reset_slider(self):
-        self.range_slider.cmin = self.data.min()
-        self.range_slider.cmax = self.data.max()
+        self.range_slider.cmin = np.nanmin(self.data)
+        self.range_slider.cmax = np.nanmax(self.data)
         self.range_slider.set_limits(
-            vmin=int(self.data.min()-1), vmax=int(self.data.max()+1)
+            vmin=int(np.nanmin(self.data) - 1), vmax=int(np.nanmax(self.data) + 1)
         )
         self.update()
 
@@ -97,7 +97,7 @@ class ImPlotElement(object):
         self.update()
 
     def normalize(self, data: np.ndarray) -> np.ndarray:
-        norm_data = np.log(data - data.min() + 1) if self.log else data
+        norm_data = np.log(data - np.nanmin(data) + 1) if self.log else data
 
         norm_data = np.where(
             norm_data > self.range_slider.cmax, self.range_slider.cmax, norm_data
@@ -106,7 +106,7 @@ class ImPlotElement(object):
             norm_data < self.range_slider.cmin, self.range_slider.cmin, norm_data
         )
 
-        dmin, dmax = norm_data.min(), norm_data.max()
+        dmin, dmax = np.nanmin(norm_data), np.nanmax(norm_data)
         norm_data = (norm_data - dmin) / (dmax - dmin + 1e-10)
         return norm_data
 

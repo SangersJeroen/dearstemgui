@@ -5,6 +5,7 @@ from libertem.api import Context
 
 from dearstemgui.app_state_singleton import APP_STATE
 from dearstemgui.windows.analyses.abf_udf_navigator import ABFNavigator
+from dearstemgui.windows.analyses.com_shift_navigator import COMShiftNavigator
 from dearstemgui.windows.analyses.haadf_udf_navigator import HAADFNavigator
 from dearstemgui.windows.analyses.rigid_shift_navigator import RigidShiftNavigator
 from dearstemgui.windows.measurement_dialog import measurement_selector
@@ -30,6 +31,8 @@ def analyses_router_callback(
             instancer = PointSignalNavigator
         case "rigid":
             instancer = RigidShiftNavigator
+        case "com":
+            instancer = COMShiftNavigator
         case _:
             print(user_data)
 
