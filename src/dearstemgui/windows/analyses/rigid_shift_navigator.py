@@ -1,5 +1,7 @@
 from typing import Any
+
 import dearpygui.dearpygui as dpg
+from jtools.comtools.libertemudf import RigidShiftAnalysis, RigidShiftAnalysisCircle
 from libertem.api import UDF, Context
 from libertem.udf.raw import PickUDF
 import numpy as np
@@ -10,7 +12,6 @@ from dearstemgui.widgets import (
     navigation_element,
 )
 from dearstemgui.windows.analyses.signal_navigator import MRSTEMNavigator
-from jtools.comtools.libertemudf import RigidShiftAnalysisCircle, RigidShiftAnalysis
 
 
 class RigidShiftNavigator(MRSTEMNavigator):

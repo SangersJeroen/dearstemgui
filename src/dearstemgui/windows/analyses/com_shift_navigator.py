@@ -1,13 +1,12 @@
-from typing import Any
 import dearpygui.dearpygui as dpg
+from jtools.comtools.libertemudf import CoMShiftAnalysis
 from libertem.api import UDF, Context
 from libertem.udf.raw import PickUDF
 import numpy as np
 
 from dearstemgui.logic.measurement import EMPAD_Measurements
-from dearstemgui.widgets import ImPlotElement, navigation_element, LiveImPlotElement
+from dearstemgui.widgets import ImPlotElement, LiveImPlotElement, navigation_element
 from dearstemgui.windows.analyses.signal_navigator import MRSTEMNavigator
-from jtools.comtools.libertemudf import CoMShiftAnalysis
 
 
 class COMShiftNavigator(MRSTEMNavigator):

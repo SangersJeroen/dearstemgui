@@ -1,9 +1,10 @@
-from typing import Literal, Callable
+from collections.abc import Callable
+from typing import Literal
 
 import dearpygui.dearpygui as dpg
 
 
-class RangeSelector(object):
+class RangeSelector:
     def __init__(
         self,
         update_callback: Callable[..., None],

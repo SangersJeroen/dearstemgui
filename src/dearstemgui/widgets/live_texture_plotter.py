@@ -1,9 +1,9 @@
+from collections.abc import Callable
 from types import UnionType
-from typing import Callable
+
 from libertem.api import UDF, UDFResults
 from libertem.io.dataset.empad import EMPADDataSet
 from libertem.viz.base import Live2DPlot
-
 import numpy as np
 
 Channel: UnionType = str | tuple[str, Callable[[np.ndarray], np.ndarray]] | None
@@ -18,7 +18,7 @@ class LiveImPlotElement(Live2DPlot):
         roi: np.ndarray | None = None,
         channel: Channel = None,
         title: str | None = None,
-        min_delta: float = 1/60,
+        min_delta: float = 1 / 60,
         udfresult: UDFResults | None = None,
     ):
         self._callback = update_callback

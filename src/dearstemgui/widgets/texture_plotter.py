@@ -1,9 +1,10 @@
 import dearpygui.dearpygui as dpg
-from .range_selector import RangeSelector
 import numpy as np
 
+from .range_selector import RangeSelector
 
-class ImPlotElement(object):
+
+class ImPlotElement:
     def __init__(
         self,
         shape: tuple[int, int],
@@ -78,19 +79,18 @@ class ImPlotElement(object):
             with (
                 dpg.collapsing_header(
                     label="Image Options", tag=self.draw_list_tag + "_child"
-                ),
+                ), dpg.group(horizontal=True)
             ):
-                with dpg.group(horizontal=True):
-                    dpg.add_button(
-                        label="toggle log",
-                        callback=lambda: self._toggle_log(),
-                        tag=self.draw_list_tag + "_log",
-                    )
-                    dpg.add_button(
-                        label="reset",
-                        callback=lambda: self._reset_slider(),
-                    )
-                    self.range_slider.render()
+                dpg.add_button(
+                    label="toggle log",
+                    callback=lambda: self._toggle_log(),
+                    tag=self.draw_list_tag + "_log",
+                )
+                dpg.add_button(
+                    label="reset",
+                    callback=lambda: self._reset_slider(),
+                )
+                self.range_slider.render()
             with dpg.drawlist(width=width, height=width, tag=self.draw_list_tag):
                 pass
 

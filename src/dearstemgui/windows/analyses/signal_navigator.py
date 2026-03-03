@@ -1,5 +1,5 @@
 import dearpygui.dearpygui as dpg
-from libertem.api import Context, DataSet
+from libertem.api import Context
 from libertem.io.dataset.empad import EMPADDataSet
 from libertem.udf.raw import PickUDF
 import numpy as np
