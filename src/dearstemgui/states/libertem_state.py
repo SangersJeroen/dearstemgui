@@ -9,9 +9,12 @@ class LibertemSate:
 
     def create_context(
         self,
-        executor: Literal["threads", "dask", "delayed"] = "delayed",
+        executor: Literal["threads", "dask", "delayed", "inline"] = "delayed",
         cpu: int | None = None,
         gpu: int | None = None,
     ) -> Context:
         context = Context.make_with(executor_spec=executor, cpus=cpu, gpus=gpu)
         self.context = context
+
+    def delete_context(self) -> None:
+        self.context = None

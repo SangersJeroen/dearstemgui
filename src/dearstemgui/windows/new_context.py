@@ -15,8 +15,9 @@ def create_context_dialog() -> None:
     def _parse_inputs_create_context() -> None:
         state: LibertemSate = APP_STATE.libertem_state
         executor: str = dpg.get_value(item="context_create_executor")
+        num_cpu: int = dpg.get_value("context_create_dialog_cpu")
 
-        state.create_context(executor=executor)
+        state.create_context(executor=executor, cpu=num_cpu)
 
     with dpg.window(
         label="context create",
@@ -36,3 +37,11 @@ def create_context_dialog() -> None:
             label="ceate",
             callback=_parse_inputs_create_context,
         )
+        with dpg.group():
+            dpg.add_input_int(
+                label="# CPUs:",
+                min_value=1,
+                max_value=12,
+                default_value=2,
+                tag="context_create_dialog_cpu",
+            )
