@@ -124,9 +124,9 @@ class ABFNavigator(HAADFNavigator):
                             min_value=1,
                             max_value=100,
                             default_value=self.mask_r,
-                            callback=self.update_mask,
+                            callback=lambda: self.update_mask(),
                         )
-                        dpg.add_button(label="compute", callback=self.compute)
+                        dpg.add_button(label="compute", callback=lambda: self.compute())
         with dpg.item_handler_registry() as handler:
             # dpg.add_item_visible_handler(callback=lambda: self.update())
             dpg.add_item_resize_handler(callback=lambda: self.update())

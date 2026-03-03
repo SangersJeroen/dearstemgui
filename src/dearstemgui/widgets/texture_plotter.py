@@ -34,7 +34,7 @@ class ImPlotElement(object):
         self.parent_tag: str = parent_tag
 
         self.range_slider: RangeSelector = RangeSelector(
-            update_callback=self.update_texture,
+            update_callback=lambda: self.update_texture(),
             tag=self.draw_list_tag + "_slider",
             parent_tag=self.draw_list_tag + "_child",
             init_range=(0, 1e5),
@@ -83,12 +83,12 @@ class ImPlotElement(object):
                 with dpg.group(horizontal=True):
                     dpg.add_button(
                         label="toggle log",
-                        callback=self._toggle_log,
+                        callback=lambda: self._toggle_log(),
                         tag=self.draw_list_tag + "_log",
                     )
                     dpg.add_button(
                         label="reset",
-                        callback=self._reset_slider,
+                        callback=lambda: self._reset_slider(),
                     )
                     self.range_slider.render()
             with dpg.drawlist(width=width, height=width, tag=self.draw_list_tag):

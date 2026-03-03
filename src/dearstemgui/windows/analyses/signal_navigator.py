@@ -1,5 +1,6 @@
 import dearpygui.dearpygui as dpg
 from libertem.api import Context, DataSet
+from libertem.io.dataset.empad import EMPADDataSet
 from libertem.udf.raw import PickUDF
 import numpy as np
 
@@ -17,7 +18,7 @@ class MRSTEMNavigator:
         self.measurement: EMPAD_Measurements = measurement
         self.measurement.update_nav_callbacks.append(self.update_signal)
 
-        self.ds: DataSet = measurement.dataset
+        self.ds: EMPADDataSet = measurement.dataset
         self.ctx: Context = ctx
 
         self.nav_shape: tuple[int, int] = self.ds.shape.nav

@@ -149,7 +149,9 @@ class PointSignalNavigator(MRSTEMNavigator):
                     self._move_down,
                 ])
 
-                dpg.add_button(label="log", callback=self._toggle_log)
+                dpg.add_button(label="log", 
+                               callback=lambda: self._toggle_log(),
+                               )
                 dpg.add_input_float(
                     tag=self._tag("vmax"),
                     label="vmax",
@@ -184,7 +186,9 @@ class PointSignalNavigator(MRSTEMNavigator):
                 min_value=0,
                 max_value=self.sig_shape[0],
             )
-            dpg.add_button(label="compute", callback=self.compute)
+            dpg.add_button(label="compute", 
+                           callback=lambda: self.compute(),
+                           )
 
         self.update_signal()
         self._push_update()

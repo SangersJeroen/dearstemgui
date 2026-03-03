@@ -203,7 +203,9 @@ class HAADFNavigator(MRSTEMNavigator):
                             init_range=(0, 75),
                         )
                         self.r_select.render()
-                        dpg.add_button(label="compute", callback=self.compute)
+                        dpg.add_button(label="compute",
+                                       callback=lambda: self.compute(),
+                                       )
 
         with dpg.item_handler_registry() as handler:
             dpg.add_item_resize_handler(callback=lambda: self.update())

@@ -19,13 +19,13 @@ class COMShiftNavigator(MRSTEMNavigator):
     ) -> None:
         super().__init__(measurement, ctx, tag_suffix)
         self.tag_prefix: str = str(measurement.index) + "_com_nav"
-        self._live: bool = False
 
         self._center_y: float = self.sig_shape[0] / 2
         self._center_x: float = self.sig_shape[1] / 2
 
-    def _toggle_live(self, sender: int, app_data: bool, user_data: Any) -> None:
-        self._live = app_data
+    @property
+    def _live(self) -> bool:
+        return dpg.get_value(self._tag("_live"))
 
     def _mask_up(self) -> None:
         if self._center_y > 0:
@@ -274,9 +274,7 @@ class COMShiftNavigator(MRSTEMNavigator):
                             f"Postition: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
                             tag=self._tag("position_text"),
                         )
-                        dpg.add_checkbox(
-                            label="live result", callback=self._toggle_live
-                        )
+                        dpg.add_checkbox(label="live result", tag=self._tag("_live"))
                         navigation_element(
                             [
                                 self._move_up,
@@ -291,7 +289,10 @@ class COMShiftNavigator(MRSTEMNavigator):
                             f"Mask center: ({self._center_y}, {self._center_x})",
                             tag=self._tag("mask_text"),
                         )
-                        dpg.add_button(label="reset position", callback=self.reset_mask)
+                        dpg.add_button(
+                            label="reset position",
+                            callback=lambda: self.reset_mask(),
+                        )
                         navigation_element(
                             [
                                 self._mask_up,
@@ -307,7 +308,8 @@ class COMShiftNavigator(MRSTEMNavigator):
                                 label="subtract image", tag=self._tag("_subtract_image")
                             )
                             dpg.add_button(
-                                label="use current", callback=self._use_curr_cbed_as_ref
+                                label="use current",
+                                callback=lambda: self._use_curr_cbed_as_ref(),
                             )
                             dpg.add_checkbox(
                                 label="use PACBED", tag=self._tag("_use_pacbed")
@@ -334,5 +336,8 @@ class COMShiftNavigator(MRSTEMNavigator):
                             min_value=0,
                             max_value=128,
                         )
-            dpg.add_button(label="compute", callback=self.compute)
+            dpg.add_button(
+                label="compute",
+                callback=lambda: self.compute(),
+            )
         self.update()

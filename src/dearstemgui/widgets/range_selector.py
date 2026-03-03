@@ -141,7 +141,7 @@ class RangeSelector(object):
                 default_value="0",
                 width=60,
                 tag=self._tag + "_lower_bound",
-                callback=self.update,
+                callback=lambda: self.update(),
             )
             dpg.add_spacer(width=10)
             dpg.add_drawlist(
@@ -154,13 +154,13 @@ class RangeSelector(object):
                 default_value="1e5",
                 width=60,
                 tag=self._tag + "_upper_bound",
-                callback=self.update,
+                callback=lambda: self.update(),
             )
 
         with dpg.item_handler_registry(tag=self._tag + "_handlers"):
-            dpg.add_item_clicked_handler(callback=self.mouse_down)
-            dpg.add_item_deactivated_handler(callback=self.mouse_up)
-            dpg.add_item_active_handler(callback=self.mouse_drag)
+            dpg.add_item_clicked_handler(callback=lambda: self.mouse_down())
+            dpg.add_item_deactivated_handler(callback=lambda: self.mouse_up())
+            dpg.add_item_active_handler(callback=lambda: self.mouse_drag())
 
         dpg.bind_item_handler_registry(
             self._tag + "_drawlist",

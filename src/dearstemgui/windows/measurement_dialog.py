@@ -43,4 +43,6 @@ def measurement_selector(launch_callback: Callable) -> None:
             label=f"Select {dpg.get_value('measurement_selector_options')}",
             callback=close_dialog,
         )
-        dpg.add_button(callback=refresh, label="Refresh")
+        dpg.add_button(
+            callback=refresh,
+            label="Refresh")

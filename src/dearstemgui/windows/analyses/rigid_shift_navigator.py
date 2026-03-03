@@ -189,7 +189,8 @@ class RigidShiftNavigator(MRSTEMNavigator):
                             tag=self._tag("position_text"),
                         )
                         dpg.add_checkbox(
-                            label="live result", callback=self._toggle_live
+                            label="live result", 
+                            callback=lambda: self._toggle_live(),
                         )
                         navigation_element(
                             [
@@ -211,7 +212,7 @@ class RigidShiftNavigator(MRSTEMNavigator):
                             dpg.add_checkbox(
                                 label="use edges",
                                 tag=self._tag("_use_edges"),
-                                callback=self._toggle_edges,
+                                callback=lambda: self._toggle_edges(),
                             )
                             dpg.add_text("reference CBED")
                             dpg.add_input_int(
@@ -227,7 +228,8 @@ class RigidShiftNavigator(MRSTEMNavigator):
                                 tag=self._tag("_y_idx_ref"),
                             )
                             dpg.add_button(
-                                label="use current", callback=self._use_curr_cbed_as_ref
+                                label="use current", 
+                                callback=lambda: self._use_curr_cbed_as_ref(),
                             )
                         with dpg.group(label="fit circle options"):
                             dpg.add_slider_float(
@@ -237,5 +239,7 @@ class RigidShiftNavigator(MRSTEMNavigator):
                                 max_value=0.9,
                                 tag=self._tag("_threshold"),
                             )
-            dpg.add_button(label="compute", callback=self.compute)
+            dpg.add_button(label="compute", 
+                           callback=lambda: self.compute(),
+                           )
         self.update()

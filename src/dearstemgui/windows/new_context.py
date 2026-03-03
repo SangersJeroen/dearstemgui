@@ -28,4 +28,7 @@ def create_context_dialog() -> None:
             label="executor:",
             tag="context_create_executor",
         )
-        dpg.add_button(label="ceate", callback=_parse_inputs_create_context)
+        dpg.add_button(
+            label="ceate",
+            callback=_parse_inputs_create_context,
+        )
