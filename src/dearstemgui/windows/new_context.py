@@ -24,7 +24,7 @@ def create_context_dialog() -> None:
         no_collapse=False,
     ):
         dpg.add_combo(
-            items=["dask", "delayed", "threads"],
+            items=["dask", "delayed", "threads", "inline"],
             label="executor:",
             tag="context_create_executor",
         )

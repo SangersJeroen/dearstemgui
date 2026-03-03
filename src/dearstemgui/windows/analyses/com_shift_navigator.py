@@ -5,10 +5,7 @@ from libertem.udf.raw import PickUDF
 import numpy as np
 
 from dearstemgui.logic.measurement import EMPAD_Measurements
-from dearstemgui.widgets import (
-    ImPlotElement,
-    navigation_element,
-)
+from dearstemgui.widgets import ImPlotElement, navigation_element, LiveImPlotElement
 from dearstemgui.windows.analyses.signal_navigator import MRSTEMNavigator
 from jtools.comtools.libertemudf import CoMShiftAnalysis
 
@@ -190,8 +187,24 @@ class COMShiftNavigator(MRSTEMNavigator):
 
     def compute(self) -> None:
         udf = self.udf
+        live_plots = [
+            LiveImPlotElement(
+                dataset=self.ds,
+                udf=udf,
+                channel=("com_deflection", lambda x: x[..., 0]),
+                update_callback=self.sx_plot.update,
+            ),
+            LiveImPlotElement(
+                dataset=self.ds,
+                udf=udf,
+                channel=("com_deflection", lambda x: x[..., 1]),
+                update_callback=self.sx_plot.update,
+            ),
+        ]
 
-        result = self.ctx.run_udf(dataset=self.ds, udf=udf, progress=True, sync=True)
+        result = self.ctx.run_udf(
+            dataset=self.ds, udf=udf, plots=live_plots, progress=True
+        )
         com_shift_signal = np.array(
             result["com_deflection"].data.reshape((*self.nav_shape, 2))
         )
@@ -260,6 +273,7 @@ class COMShiftNavigator(MRSTEMNavigator):
                     size_fraction=(0.33, 0),
                 )
                 self.sx_plot.render()
+                self.sx_plot.range_slider.set_limits(vmin=-5, vmax=5)
                 self.sy_plot = ImPlotElement(
                     shape=self.nav_shape,
                     tag_prefix=self._tag("_sy_signal"),
@@ -267,6 +281,7 @@ class COMShiftNavigator(MRSTEMNavigator):
                     size_fraction=(0.33, 0),
                 )
                 self.sy_plot.render()
+                self.sy_plot.range_slider.set_limits(vmin=-5, vmax=5)
             with dpg.child_window(no_scrollbar=True, tag=self._tag("_controls")):
                 with dpg.group(horizontal=True):
                     with dpg.group():
@@ -283,6 +298,10 @@ class COMShiftNavigator(MRSTEMNavigator):
                                 self._move_down,
                             ],
                             tag=self._tag("sig_move"),
+                        )
+                        dpg.add_button(
+                            label="compute",
+                            callback=lambda: self.compute(),
                         )
                     with dpg.group():
                         dpg.add_text(
@@ -320,12 +339,14 @@ class COMShiftNavigator(MRSTEMNavigator):
                                 min_value=0,
                                 max_value=self.nav_shape[1],
                                 tag=self._tag("_x_idx_ref"),
+                                width=200
                             )
                             dpg.add_input_int(
                                 label="y",
                                 min_value=0,
                                 max_value=self.nav_shape[0],
                                 tag=self._tag("_y_idx_ref"),
+                                width=200
                             )
                         dpg.add_checkbox(
                             label="correct shift", tag=self._tag("_correct_shift")
@@ -333,11 +354,9 @@ class COMShiftNavigator(MRSTEMNavigator):
                         dpg.add_slider_float(
                             label="radius",
                             tag=self._tag("_radius_slider"),
+                            callback=lambda: self.update_signal(),
+                            default_value=20,
                             min_value=0,
                             max_value=128,
                         )
-            dpg.add_button(
-                label="compute",
-                callback=lambda: self.compute(),
-            )
         self.update()

@@ -155,7 +155,7 @@ class RigidShiftNavigator(MRSTEMNavigator):
     def render(self) -> None:
         with dpg.window(
             tag=self._tag("rigid_shift_navigator"),
-            label=str(self.measurement.index) + "Rigid Shift Navigator",
+            label=str(self.measurement.index) + " Rigid Shift Navigator",
             no_scrollbar=True,
             min_size=(800, 700),
         ):
@@ -174,6 +174,7 @@ class RigidShiftNavigator(MRSTEMNavigator):
                     size_fraction=(0.33, 0),
                 )
                 self.sx_plot.render()
+                self.sx_plot.range_slider.set_limits(vmin=-5, vmax=5)
                 self.sy_plot = ImPlotElement(
                     shape=self.nav_shape,
                     tag_prefix=self._tag("_sy_signal"),
@@ -181,65 +182,69 @@ class RigidShiftNavigator(MRSTEMNavigator):
                     size_fraction=(0.33, 0),
                 )
                 self.sy_plot.render()
-            with dpg.child_window(no_scrollbar=True, tag=self._tag("_controls")):
-                with dpg.group(horizontal=True):
+                self.sy_plot.range_slider.set_limits(vmin=-5, vmax=5)
+            with (
+                dpg.child_window(no_scrollbar=True, tag=self._tag("_controls")),
+                dpg.group(horizontal=True),
+            ):
+                with dpg.group():
+                    dpg.add_text(
+                        f"Postition: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
+                        tag=self._tag("position_text"),
+                    )
+                    dpg.add_checkbox(
+                        label="live result",
+                        callback=lambda s, a, u: self._toggle_live(s, a, u),
+                    )
+                    navigation_element(
+                        [
+                            self._move_up,
+                            self._move_left,
+                            self._move_right,
+                            self._move_down,
+                        ],
+                        tag=self._tag("sig_move"),
+                    )
+                    dpg.add_button(
+                        label="compute",
+                        callback=lambda: self.compute(),
+                    )
+                with dpg.group():
                     with dpg.group():
-                        dpg.add_text(
-                            f"Postition: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
-                            tag=self._tag("position_text"),
+                        dpg.add_text("method:")
+                        dpg.add_combo(
+                            items=["fit circle", "cross corr."],
+                            tag=self._tag("_method_selector"),
                         )
+                    with dpg.group(label="cross correlation options"):
                         dpg.add_checkbox(
-                            label="live result", 
-                            callback=lambda: self._toggle_live(),
+                            label="use edges",
+                            tag=self._tag("_use_edges"),
+                            callback=lambda s, a, u: self._toggle_edges(s, a, u),
                         )
-                        navigation_element(
-                            [
-                                self._move_up,
-                                self._move_left,
-                                self._move_right,
-                                self._move_down,
-                            ],
-                            tag=self._tag("sig_move"),
+                        dpg.add_text("reference CBED")
+                        dpg.add_input_int(
+                            label="x",
+                            min_value=0,
+                            max_value=self.nav_shape[1],
+                            tag=self._tag("_x_idx_ref"),
                         )
-                    with dpg.group():
-                        with dpg.group():
-                            dpg.add_text("method:")
-                            dpg.add_combo(
-                                items=["fit circle", "cross corr."],
-                                tag=self._tag("_method_selector"),
-                            )
-                        with dpg.group(label="cross correlation options"):
-                            dpg.add_checkbox(
-                                label="use edges",
-                                tag=self._tag("_use_edges"),
-                                callback=lambda: self._toggle_edges(),
-                            )
-                            dpg.add_text("reference CBED")
-                            dpg.add_input_int(
-                                label="x",
-                                min_value=0,
-                                max_value=self.nav_shape[1],
-                                tag=self._tag("_x_idx_ref"),
-                            )
-                            dpg.add_input_int(
-                                label="y",
-                                min_value=0,
-                                max_value=self.nav_shape[0],
-                                tag=self._tag("_y_idx_ref"),
-                            )
-                            dpg.add_button(
-                                label="use current", 
-                                callback=lambda: self._use_curr_cbed_as_ref(),
-                            )
-                        with dpg.group(label="fit circle options"):
-                            dpg.add_slider_float(
-                                label="fraction of max",
-                                default_value=0.75,
-                                min_value=0.1,
-                                max_value=0.9,
-                                tag=self._tag("_threshold"),
-                            )
-            dpg.add_button(label="compute", 
-                           callback=lambda: self.compute(),
-                           )
+                        dpg.add_input_int(
+                            label="y",
+                            min_value=0,
+                            max_value=self.nav_shape[0],
+                            tag=self._tag("_y_idx_ref"),
+                        )
+                        dpg.add_button(
+                            label="use current",
+                            callback=lambda: self._use_curr_cbed_as_ref(),
+                        )
+                    with dpg.group(label="fit circle options"):
+                        dpg.add_slider_float(
+                            label="fraction of max",
+                            default_value=0.75,
+                            min_value=0.1,
+                            max_value=0.9,
+                            tag=self._tag("_threshold"),
+                        )
         self.update()

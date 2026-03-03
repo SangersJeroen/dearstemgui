@@ -84,7 +84,6 @@ class RangeSelector(object):
             return
 
         x = max(0, min(self.bar_width, self._mouse_x_local()))
-        print(f"dragging mouse {x}")
         value = self.pos_to_value(x)
 
         if self.dragging == "min":
@@ -158,9 +157,9 @@ class RangeSelector(object):
             )
 
         with dpg.item_handler_registry(tag=self._tag + "_handlers"):
-            dpg.add_item_clicked_handler(callback=lambda: self.mouse_down())
-            dpg.add_item_deactivated_handler(callback=lambda: self.mouse_up())
-            dpg.add_item_active_handler(callback=lambda: self.mouse_drag())
+            dpg.add_item_clicked_handler(callback=lambda s, a: self.mouse_down(s, a))
+            dpg.add_item_deactivated_handler(callback=lambda s, a: self.mouse_up(s, a))
+            dpg.add_item_active_handler(callback=lambda s, a: self.mouse_drag(s, a))
 
         dpg.bind_item_handler_registry(
             self._tag + "_drawlist",

@@ -86,7 +86,7 @@ class MRSTEMNavigator:
             tag=self._tag("stem_navigator"),
             label=str(self.measurement.index) + " Navigator",
             no_scrollbar=True,
-            min_size=(100, 100),
+            min_size=(150, 200),
         ):
             self.signal_plot = ImPlotElement(
                 shape=self.sig_shape,
@@ -96,6 +96,10 @@ class MRSTEMNavigator:
             self.signal_plot.render()
 
             with dpg.child_window(no_scrollbar=True):
+                dpg.add_text(
+                    f"Position: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
+                    tag=self._tag("position_text"),
+                )
                 with dpg.group(horizontal=True):
                     navigation_element(
                         [
@@ -106,8 +110,4 @@ class MRSTEMNavigator:
                         ],
                         tag=self._tag("sig_move"),
                     )
-                dpg.add_text(
-                    f"Position: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
-                    tag=self._tag("position_text"),
-                )
         self.update()

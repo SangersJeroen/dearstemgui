@@ -119,16 +119,19 @@ class ABFNavigator(HAADFNavigator):
                             ],
                             tag=self._tag("mask_move"),
                         )
+                    with dpg.group():
                         dpg.add_slider_float(
                             tag=self._tag("r_slider"),
                             min_value=1,
                             max_value=100,
                             default_value=self.mask_r,
                             callback=lambda: self.update_mask(),
+                            width=300,
                         )
                         dpg.add_button(label="compute", callback=lambda: self.compute())
+
         with dpg.item_handler_registry() as handler:
-            # dpg.add_item_visible_handler(callback=lambda: self.update())
             dpg.add_item_resize_handler(callback=lambda: self.update())
         dpg.bind_item_handler_registry(window, handler)
+
         self.update()

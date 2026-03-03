@@ -118,7 +118,9 @@ class ImPlotElement(object):
 
         dpg.set_value(self.texture_tag, self.im_rgba.flatten())
 
-    def update(self, data: None | np.ndarray = None) -> None:
+    def update(
+        self, data: None | np.ndarray = None, damage: np.ndarray | None = None
+    ) -> None:
         if data is not None:
             self.data = data
         self.update_texture()

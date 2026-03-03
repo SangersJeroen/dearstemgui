@@ -165,6 +165,7 @@ class HAADFNavigator(MRSTEMNavigator):
                     size_fraction=(0.5, 0.0),
                 )
                 self.result_plot.render()
+                self.result_plot.range_slider.set_limits(vmin=0, vmax=1e6)
 
             with dpg.child_window(no_scrollbar=True, tag=self._tag("controls")):
                 with dpg.group(horizontal=True):
@@ -196,16 +197,19 @@ class HAADFNavigator(MRSTEMNavigator):
                             ],
                             tag=self._tag("mask_move"),
                         )
+                    with dpg.group():
                         self.r_select = RangeSelector(
                             self.update_signal,
                             tag=self._tag("mask_ri"),
                             parent_tag=self._tag("stem_navigator"),
                             init_range=(0, 75),
+                            width_fraction=0.5,
                         )
                         self.r_select.render()
-                        dpg.add_button(label="compute",
-                                       callback=lambda: self.compute(),
-                                       )
+                        dpg.add_button(
+                            label="compute",
+                            callback=lambda: self.compute(),
+                        )
 
         with dpg.item_handler_registry() as handler:
             dpg.add_item_resize_handler(callback=lambda: self.update())
