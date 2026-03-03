@@ -1,17 +1,18 @@
-from typing import Any, Callable, Literal
+from collections.abc import Callable
 from functools import partial
+from typing import Any, Literal
 
 from libertem.api import Context
 
 from dearstemgui.app_state_singleton import APP_STATE
+from dearstemgui.logic.measurement import EMPAD_Measurements
 from dearstemgui.windows.analyses.abf_udf_navigator import ABFNavigator
 from dearstemgui.windows.analyses.com_shift_navigator import COMShiftNavigator
 from dearstemgui.windows.analyses.haadf_udf_navigator import HAADFNavigator
-from dearstemgui.windows.analyses.rigid_shift_navigator import RigidShiftNavigator
-from dearstemgui.windows.measurement_dialog import measurement_selector
-from dearstemgui.logic.measurement import EMPAD_Measurements
-from dearstemgui.windows.analyses.signal_navigator import MRSTEMNavigator
 from dearstemgui.windows.analyses.point_udf_navigator import PointSignalNavigator
+from dearstemgui.windows.analyses.rigid_shift_navigator import RigidShiftNavigator
+from dearstemgui.windows.analyses.signal_navigator import MRSTEMNavigator
+from dearstemgui.windows.measurement_dialog import measurement_selector
 
 
 def analyses_router_callback(

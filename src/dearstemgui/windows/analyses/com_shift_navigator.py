@@ -84,15 +84,12 @@ class COMShiftNavigator(MRSTEMNavigator):
             color=(180, 0, 0),
             parent=self.signal_plot.draw_list_tag,
         )
-        print(f"update signal: live {self._live}")
         if self._live:
-            print("calculating com shift for frame")
             result = self.ctx.run_udf(dataset=self.ds, udf=self.udf, roi=self.roi)
             signal = np.array(result["com_deflection"].data[self.roi, :])
             sy: float
             sx: float
             sy, sx = signal[0, :]
-            print(sy, sx)
 
             sy += self._center_y
             sx += self._center_x
@@ -144,6 +141,7 @@ class COMShiftNavigator(MRSTEMNavigator):
         correct_shift = None
         if self.correct_shift:
             if self.measurement.rigid_shift_sensor_axis_0 is None:
+                # TODO: replace with pop-up
                 print("No correction signal found")
             else:
                 correct_shift = np.stack(
@@ -153,7 +151,6 @@ class COMShiftNavigator(MRSTEMNavigator):
                     ],
                     axis=0,
                 )
-                print(correct_shift.shape)
 
         subtract = None
         if self.subtract_image:
@@ -166,12 +163,6 @@ class COMShiftNavigator(MRSTEMNavigator):
             else:
                 subtract = self.reference_frame
 
-        print(
-            f"Created UDF with radius: {radius}, center: {center},\
-            correct shift: {self.correct_shift},\
-            subtract image: {self.subtract_image} with "
-            + "pacbed" * dpg.get_value(self._tag("_use_pacbed"))
-        )
         udf: UDF = CoMShiftAnalysis(
             radius=radius,
             center=center,
@@ -281,81 +272,83 @@ class COMShiftNavigator(MRSTEMNavigator):
                 )
                 self.sy_plot.render()
                 self.sy_plot.range_slider.set_limits(vmin=-5, vmax=5)
-            with dpg.child_window(no_scrollbar=True, tag=self._tag("_controls")):
-                with dpg.group(horizontal=True):
-                    with dpg.group():
-                        dpg.add_text(
-                            f"Postition: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
-                            tag=self._tag("position_text"),
-                        )
-                        dpg.add_checkbox(label="live result", tag=self._tag("_live"))
-                        navigation_element(
-                            [
-                                self._move_up,
-                                self._move_left,
-                                self._move_right,
-                                self._move_down,
-                            ],
-                            tag=self._tag("sig_move"),
-                        )
-                        dpg.add_button(
-                            label="compute",
-                            callback=lambda: self.compute(),
-                        )
-                    with dpg.group():
-                        dpg.add_text(
-                            f"Mask center: ({self._center_y}, {self._center_x})",
-                            tag=self._tag("mask_text"),
-                        )
-                        dpg.add_button(
-                            label="reset position",
-                            callback=lambda: self.reset_mask(),
-                        )
-                        navigation_element(
-                            [
-                                self._mask_up,
-                                self._mask_left,
-                                self._mask_right,
-                                self._mask_down,
-                            ],
-                            tag=self._tag("mask_move"),
-                        )
-                    with dpg.group():
-                        with dpg.group(horizontal=True):
-                            dpg.add_checkbox(
-                                label="subtract image", tag=self._tag("_subtract_image")
-                            )
-                            dpg.add_button(
-                                label="use current",
-                                callback=lambda: self._use_curr_cbed_as_ref(),
-                            )
-                            dpg.add_checkbox(
-                                label="use PACBED", tag=self._tag("_use_pacbed")
-                            )
-                        with dpg.group(horizontal=True):
-                            dpg.add_input_int(
-                                label="x",
-                                min_value=0,
-                                max_value=self.nav_shape[1],
-                                tag=self._tag("_x_idx_ref"),
-                                width=200
-                            )
-                            dpg.add_input_int(
-                                label="y",
-                                min_value=0,
-                                max_value=self.nav_shape[0],
-                                tag=self._tag("_y_idx_ref"),
-                                width=200
-                            )
+            with (
+                dpg.child_window(no_scrollbar=True, tag=self._tag("_controls")),
+                dpg.group(horizontal=True),
+            ):
+                with dpg.group():
+                    dpg.add_text(
+                        f"Postition: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
+                        tag=self._tag("position_text"),
+                    )
+                    dpg.add_checkbox(label="live result", tag=self._tag("_live"))
+                    navigation_element(
+                        [
+                            self._move_up,
+                            self._move_left,
+                            self._move_right,
+                            self._move_down,
+                        ],
+                        tag=self._tag("sig_move"),
+                    )
+                    dpg.add_button(
+                        label="compute",
+                        callback=lambda: self.compute(),
+                    )
+                with dpg.group():
+                    dpg.add_text(
+                        f"Mask center: ({self._center_y}, {self._center_x})",
+                        tag=self._tag("mask_text"),
+                    )
+                    dpg.add_button(
+                        label="reset position",
+                        callback=lambda: self.reset_mask(),
+                    )
+                    navigation_element(
+                        [
+                            self._mask_up,
+                            self._mask_left,
+                            self._mask_right,
+                            self._mask_down,
+                        ],
+                        tag=self._tag("mask_move"),
+                    )
+                with dpg.group():
+                    with dpg.group(horizontal=True):
                         dpg.add_checkbox(
-                            label="correct shift", tag=self._tag("_correct_shift")
+                            label="subtract image", tag=self._tag("_subtract_image")
                         )
-                        dpg.add_slider_float(
-                            label="radius",
-                            tag=self._tag("_radius_slider"),
-                            callback=lambda: self.update_signal(),
-                            default_value=20,
+                        dpg.add_button(
+                            label="use current",
+                            callback=lambda: self._use_curr_cbed_as_ref(),
+                        )
+                        dpg.add_checkbox(
+                            label="use PACBED", tag=self._tag("_use_pacbed")
+                        )
+                    with dpg.group(horizontal=True):
+                        dpg.add_input_int(
+                            label="x",
                             min_value=0,
-                            max_value=128,
+                            max_value=self.nav_shape[1],
+                            tag=self._tag("_x_idx_ref"),
+                            width=200,
                         )
+                        dpg.add_input_int(
+                            label="y",
+                            min_value=0,
+                            max_value=self.nav_shape[0],
+                            tag=self._tag("_y_idx_ref"),
+                            width=200,
+                        )
+                    dpg.add_checkbox(
+                        label="correct shift", tag=self._tag("_correct_shift")
+                    )
+                    dpg.add_slider_float(
+                        label="radius",
+                        tag=self._tag("_radius_slider"),
+                        callback=lambda: self.update_signal(),
+                        default_value=20,
+                        min_value=0,
+                        max_value=128,
+                    )
         self.update()

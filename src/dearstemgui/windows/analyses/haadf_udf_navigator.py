@@ -83,9 +83,6 @@ class HAADFNavigator(MRSTEMNavigator):
         )
 
     def compute(self) -> None:
-        print(
-            f"compute, {self.mask_x}, {self.mask_y}, {self.r_select.cmin}, {self.r_select.cmax}"
-        )
         udf = self.ctx.create_ring_analysis(
             dataset=self.ds,
             cx=self.mask_x,
@@ -116,7 +113,7 @@ class HAADFNavigator(MRSTEMNavigator):
     def move_dot(self) -> None:
         self.update_result()
 
-    def ui_update(self):
+    def ui_update(self) -> None:
         super().ui_update()
         dpg.set_value(
             self._tag("position_text"),
@@ -167,49 +164,51 @@ class HAADFNavigator(MRSTEMNavigator):
                 self.result_plot.render()
                 self.result_plot.range_slider.set_limits(vmin=0, vmax=1e6)
 
-            with dpg.child_window(no_scrollbar=True, tag=self._tag("controls")):
-                with dpg.group(horizontal=True):
-                    with dpg.group():
-                        dpg.add_text(
-                            f"Postition: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
-                            tag=self._tag("position_text"),
-                        )
-                        navigation_element(
-                            [
-                                self._move_up,
-                                self._move_left,
-                                self._move_right,
-                                self._move_down,
-                            ],
-                            tag=self._tag("sig_move"),
-                        )
-                    with dpg.group():
-                        dpg.add_text(
-                            f"mask center: ({self.mask_x}, {self.mask_y})",
-                            tag=self._tag("mask_text"),
-                        )
-                        navigation_element(
-                            [
-                                self._mask_move_up,
-                                self._mask_move_left,
-                                self._mask_move_right,
-                                self._mask_move_down,
-                            ],
-                            tag=self._tag("mask_move"),
-                        )
-                    with dpg.group():
-                        self.r_select = RangeSelector(
-                            self.update_signal,
-                            tag=self._tag("mask_ri"),
-                            parent_tag=self._tag("stem_navigator"),
-                            init_range=(0, 75),
-                            width_fraction=0.5,
-                        )
-                        self.r_select.render()
-                        dpg.add_button(
-                            label="compute",
-                            callback=lambda: self.compute(),
-                        )
+            with (
+                dpg.child_window(no_scrollbar=True, tag=self._tag("controls")),
+                dpg.group(horizontal=True),
+            ):
+                with dpg.group():
+                    dpg.add_text(
+                        f"Postition: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
+                        tag=self._tag("position_text"),
+                    )
+                    navigation_element(
+                        [
+                            self._move_up,
+                            self._move_left,
+                            self._move_right,
+                            self._move_down,
+                        ],
+                        tag=self._tag("sig_move"),
+                    )
+                with dpg.group():
+                    dpg.add_text(
+                        f"mask center: ({self.mask_x}, {self.mask_y})",
+                        tag=self._tag("mask_text"),
+                    )
+                    navigation_element(
+                        [
+                            self._mask_move_up,
+                            self._mask_move_left,
+                            self._mask_move_right,
+                            self._mask_move_down,
+                        ],
+                        tag=self._tag("mask_move"),
+                    )
+                with dpg.group():
+                    self.r_select = RangeSelector(
+                        self.update_signal,
+                        tag=self._tag("mask_ri"),
+                        parent_tag=self._tag("stem_navigator"),
+                        init_range=(0, 75),
+                        width_fraction=0.5,
+                    )
+                    self.r_select.render()
+                    dpg.add_button(
+                        label="compute",
+                        callback=lambda: self.compute(),
+                    )
 
         with dpg.item_handler_registry() as handler:
             dpg.add_item_resize_handler(callback=lambda: self.update())

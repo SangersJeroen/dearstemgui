@@ -3,8 +3,6 @@ from libertem.io.dataset.empad import *
 
 from dearstemgui.app_state_singleton import APP_STATE
 from dearstemgui.logic.measurement import EMPAD_Measurements
-from dearstemgui.windows.analyses.haadf_udf_navigator import HAADFNavigator
-from dearstemgui.windows.analyses.signal_navigator import MRSTEMNavigator
 
 
 def file_open_router(sender: str, data: dict) -> None:

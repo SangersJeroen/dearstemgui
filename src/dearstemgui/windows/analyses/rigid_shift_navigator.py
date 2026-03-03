@@ -35,17 +35,13 @@ class RigidShiftNavigator(MRSTEMNavigator):
 
     def update_signal(self) -> None:
         super().update_signal()
-        print(f"update signal: live {self._live}, method: {self.method}")
-        # TODO: Update crosshair, deviation arrow
-        if self._live and self.method in [
+        if self._live and self.method in {
             "fit circle",
             "cross corr.",
-        ]:
-            print("calculating rigid shift for frame")
+        }:
             result = self.ctx.run_udf(dataset=self.ds, udf=self.udf, roi=self.roi)
             signal = np.array(result["rigid_deflection"].data[self.roi, :])
             sy, sx = signal[0, :]
-            print(sy, sx)
 
             if self.method == "fit circle":
                 sy += 64

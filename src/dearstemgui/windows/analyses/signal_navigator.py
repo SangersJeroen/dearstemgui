@@ -1,6 +1,11 @@
+from typing import TYPE_CHECKING
+
 import dearpygui.dearpygui as dpg
 from libertem.api import Context
-from libertem.io.dataset.empad import EMPADDataSet
+
+if TYPE_CHECKING:
+    from libertem.io.dataset.empad import EMPADDataSet
+
 from libertem.udf.raw import PickUDF
 import numpy as np
 
@@ -75,7 +80,7 @@ class MRSTEMNavigator:
         self.signal_plot.update()
         self.ui_update()
 
-    def ui_update(self):
+    def ui_update(self) -> None:
         dpg.set_value(
             self._tag("position_text"),
             f"Position: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",

@@ -1,5 +1,7 @@
-from typing import Callable
+from collections.abc import Callable
+
 import dearpygui.dearpygui as dpg
+
 from dearstemgui.app_state_singleton import APP_STATE
 from dearstemgui.windows.open_file_dialog import open_file_dialog
 
@@ -8,10 +10,10 @@ def measurement_selector(launch_callback: Callable) -> None:
     if dpg.does_item_exist("measurement_selector"):
         dpg.delete_item("measurement_selector")
 
-    def close_dialog():
+    def close_dialog() -> None:
         index = dpg.get_value("measurement_selector_options")
         measurement = APP_STATE.loaded_measurements[int(index)]
-        widget = launch_callback(measurement) 
+        widget = launch_callback(measurement)
         widget.render()
         dpg.delete_item("measurement_selector")
 
@@ -21,7 +23,7 @@ def measurement_selector(launch_callback: Callable) -> None:
             items=[str(k) for k in APP_STATE.loaded_measurements],
         )
 
-    def update_select_label(sender, app_data):
+    def update_select_label(sender: int | str, app_data: int) -> None:
         dpg.configure_item("measurement_select_continue", label=f"Select {app_data}")
 
     def open_and_refresh() -> None:
@@ -39,10 +41,8 @@ def measurement_selector(launch_callback: Callable) -> None:
             callback=update_select_label,
         )
         dpg.add_button(
-            tag='measurement_select_continue',
+            tag="measurement_select_continue",
             label=f"Select {dpg.get_value('measurement_selector_options')}",
             callback=close_dialog,
         )
-        dpg.add_button(
-            callback=refresh,
-            label="Refresh")
+        dpg.add_button(callback=refresh, label="Refresh")

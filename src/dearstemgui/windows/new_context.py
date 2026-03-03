@@ -1,7 +1,11 @@
+from typing import TYPE_CHECKING
+
 import dearpygui.dearpygui as dpg
 
 from dearstemgui.app_state_singleton import APP_STATE
-from dearstemgui.states.libertem_state import LibertemSate
+
+if TYPE_CHECKING:
+    from dearstemgui.states.libertem_state import LibertemSate
 
 
 def create_context_dialog() -> None:

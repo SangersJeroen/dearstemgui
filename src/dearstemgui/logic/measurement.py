@@ -1,5 +1,5 @@
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 import xml.etree.ElementTree as ET
 
 from libertem.api import DataSet
@@ -91,7 +91,7 @@ class EMPAD_Measurements:
         self.abf: np.ndarray | None = None
 
         # Center Reference
-        self.reference_center = tuple([i/2 for i in self.dataset.shape.sig])
+        self.reference_center = tuple([i / 2 for i in self.dataset.shape.sig])
 
         # Rigid shift signals
         self.rigid_shift_sensor_axis_0: np.ndarray | None = None

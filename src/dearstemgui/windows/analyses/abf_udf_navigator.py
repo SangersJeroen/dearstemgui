@@ -43,16 +43,13 @@ class ABFNavigator(HAADFNavigator):
             tag=self._tag("mask_ri"),
         )
 
-    def ui_update(self):
+    def ui_update(self) -> None:
         dpg.set_value(
             self._tag("position_text"),
             f"Position: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
         )
 
     def compute(self) -> None:
-        print(
-            f"compute, {self.mask_x}, {self.mask_y}, {dpg.get_value(self._tag('r_slider'))}"
-        )
         udf = self.ctx.create_ring_analysis(
             dataset=self.ds,
             cx=self.mask_x,
@@ -89,46 +86,45 @@ class ABFNavigator(HAADFNavigator):
                 )
                 self.result_plot.render()
 
-            with dpg.child_window(no_scrollbar=True):
-                with dpg.group(horizontal=True):
-                    with dpg.group():
-                        dpg.add_text(
-                            f"Postition: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
-                            tag=self._tag("position_text"),
-                        )
-                        navigation_element(
-                            [
-                                self._move_up,
-                                self._move_left,
-                                self._move_right,
-                                self._move_down,
-                            ],
-                            tag=self._tag("sig_move"),
-                        )
-                    with dpg.group():
-                        dpg.add_text(
-                            f"mask center: ({self.mask_x}, {self.mask_y})",
-                            tag=self._tag("mask_text"),
-                        )
-                        navigation_element(
-                            [
-                                self._mask_move_up,
-                                self._mask_move_left,
-                                self._mask_move_right,
-                                self._mask_move_down,
-                            ],
-                            tag=self._tag("mask_move"),
-                        )
-                    with dpg.group():
-                        dpg.add_slider_float(
-                            tag=self._tag("r_slider"),
-                            min_value=1,
-                            max_value=100,
-                            default_value=self.mask_r,
-                            callback=lambda: self.update_mask(),
-                            width=300,
-                        )
-                        dpg.add_button(label="compute", callback=lambda: self.compute())
+            with dpg.child_window(no_scrollbar=True), dpg.group(horizontal=True):
+                with dpg.group():
+                    dpg.add_text(
+                        f"Postition: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
+                        tag=self._tag("position_text"),
+                    )
+                    navigation_element(
+                        [
+                            self._move_up,
+                            self._move_left,
+                            self._move_right,
+                            self._move_down,
+                        ],
+                        tag=self._tag("sig_move"),
+                    )
+                with dpg.group():
+                    dpg.add_text(
+                        f"mask center: ({self.mask_x}, {self.mask_y})",
+                        tag=self._tag("mask_text"),
+                    )
+                    navigation_element(
+                        [
+                            self._mask_move_up,
+                            self._mask_move_left,
+                            self._mask_move_right,
+                            self._mask_move_down,
+                        ],
+                        tag=self._tag("mask_move"),
+                    )
+                with dpg.group():
+                    dpg.add_slider_float(
+                        tag=self._tag("r_slider"),
+                        min_value=1,
+                        max_value=100,
+                        default_value=self.mask_r,
+                        callback=lambda: self.update_mask(),
+                        width=300,
+                    )
+                    dpg.add_button(label="compute", callback=lambda: self.compute())
 
         with dpg.item_handler_registry() as handler:
             dpg.add_item_resize_handler(callback=lambda: self.update())

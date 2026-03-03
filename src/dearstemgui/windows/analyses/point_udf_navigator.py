@@ -97,7 +97,7 @@ class PointSignalNavigator(MRSTEMNavigator):
             parent=draw_list,
         )
 
-    def _update_result(self):
+    def _update_result(self) -> None:
         draw_list = self._tag("result_drawlist")
         dpg.set_item_width(draw_list, dpg.get_item_width(self._tag("stem_navigator")))
         dpg.set_item_height(draw_list, dpg.get_item_width(self._tag("stem_navigator")))
@@ -124,7 +124,7 @@ class PointSignalNavigator(MRSTEMNavigator):
         with dpg.window(
             tag=self._tag("stem_navigator"),
             label=str(self.measurement.index) + " STEM Navigator",
-        ) as window:
+        ):
             dpg.add_text(
                 f"Postition: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
                 tag=self._tag("position_text"),
@@ -149,9 +149,10 @@ class PointSignalNavigator(MRSTEMNavigator):
                     self._move_down,
                 ])
 
-                dpg.add_button(label="log", 
-                               callback=lambda: self._toggle_log(),
-                               )
+                dpg.add_button(
+                    label="log",
+                    callback=lambda: self._toggle_log(),
+                )
                 dpg.add_input_float(
                     tag=self._tag("vmax"),
                     label="vmax",
@@ -164,7 +165,7 @@ class PointSignalNavigator(MRSTEMNavigator):
                 width=500,
                 height=500,
                 tag=self._tag("result_drawlist"),
-            ) as drawlist:
+            ):
                 pass
 
             with dpg.item_handler_registry(tag=self._tag("result_handler")) as handler:
@@ -186,9 +187,10 @@ class PointSignalNavigator(MRSTEMNavigator):
                 min_value=0,
                 max_value=self.sig_shape[0],
             )
-            dpg.add_button(label="compute", 
-                           callback=lambda: self.compute(),
-                           )
+            dpg.add_button(
+                label="compute",
+                callback=lambda: self.compute(),
+            )
 
         self.update_signal()
         self._push_update()

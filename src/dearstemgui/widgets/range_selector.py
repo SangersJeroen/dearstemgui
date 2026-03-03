@@ -55,7 +55,7 @@ class RangeSelector:
     def max_pos(self) -> float:
         return self.value_to_pos(self.cmax)
 
-    def set_limits(self, vmin: float, vmax: float):
+    def set_limits(self, vmin: float, vmax: float) -> None:
         dpg.set_value(self._tag + "_upper_bound", f"{vmax}")
         dpg.set_value(self._tag + "_lower_bound", f"{vmin}")
         self.cmin = vmin
@@ -66,7 +66,7 @@ class RangeSelector:
         mx, _ = dpg.get_drawing_mouse_pos()
         return mx
 
-    def mouse_down(self, sender, app_data):
+    def mouse_down(self, sender, app_data) -> None:
         x = self._mouse_x_local()
         print(x)
 
@@ -77,10 +77,10 @@ class RangeSelector:
             print("clicked max")
             self.dragging = "max"
 
-    def mouse_up(self, sender, app_data):
+    def mouse_up(self, sender, app_data) -> None:
         self.dragging = "none"
 
-    def mouse_drag(self, sender, app_data):
+    def mouse_drag(self, sender, app_data) -> None:
         if self.dragging == "none":
             return
 

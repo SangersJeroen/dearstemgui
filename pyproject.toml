@@ -135,6 +135,7 @@ ignore = [
     "S603",    # subprocess without shell=True (too strict)
     "S607",    # Starting a process with a partial path (too strict)
     "PLR1702", # Too many nested blocks
+    "PLW0108", # Inline lambda needed for nuitka compilation
 ]
 
 # Complexity limits (anti-LLM-slop)
@@ -157,6 +158,7 @@ max-nested-blocks = 3  # Maximum nested block depth (PLR1702)
 ]
 '*.py' = [
     "PLR1702", # Too many nested blocks
+    "PLW0108", # Inline lambda needed for nuitka compilation
 ]
 
 [tool.ruff.lint.isort]
@@ -181,7 +183,7 @@ line-ending = "auto"
 # TypeScript strict mode equivalent
 # ============================================================
 [tool.basedpyright]
-pythonVersion = "3.12"
+pythonVersion = "3.11"
 typeCheckingMode = "strict"
 
 # ============================================================

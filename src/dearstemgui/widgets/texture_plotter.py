@@ -21,7 +21,6 @@ class ImPlotElement:
         self.sig_width: int = shape[1]
         self.sig_height: int = shape[0]
         self.aspect: float = self.sig_height / self.sig_width
-        print(f"initiating with aspect: {self.aspect}")
 
         self.log: bool = False
 
@@ -63,7 +62,7 @@ class ImPlotElement:
         self.range_slider.update()
         self.update()
 
-    def _reset_slider(self):
+    def _reset_slider(self) -> None:
         self.range_slider.cmin = np.nanmin(self.data)
         self.range_slider.cmax = np.nanmax(self.data)
         self.range_slider.set_limits(
@@ -71,15 +70,16 @@ class ImPlotElement:
         )
         self.update()
 
-    def render(self):
-        width, height = dpg.get_item_rect_size(self.parent_tag)
+    def render(self) -> None:
+        width, _ = dpg.get_item_rect_size(self.parent_tag)
         with dpg.child_window(
             no_scrollbar=True, width=width, height=width * self.aspect
         ):
             with (
                 dpg.collapsing_header(
                     label="Image Options", tag=self.draw_list_tag + "_child"
-                ), dpg.group(horizontal=True)
+                ),
+                dpg.group(horizontal=True),
             ):
                 dpg.add_button(
                     label="toggle log",
@@ -107,8 +107,7 @@ class ImPlotElement:
         )
 
         dmin, dmax = np.nanmin(norm_data), np.nanmax(norm_data)
-        norm_data = (norm_data - dmin) / (dmax - dmin + 1e-10)
-        return norm_data
+        return (norm_data - dmin) / (dmax - dmin + 1e-10)
 
     def update_texture(self) -> None:
         norm_data = self.normalize(self.data)
