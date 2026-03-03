@@ -1,3 +1,3 @@
 # DearSTEMGUI
 
-[!image](./quick_image.png)
+[!image](quick_image.png)
