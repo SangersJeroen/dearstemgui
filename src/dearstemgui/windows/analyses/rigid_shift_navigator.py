@@ -173,7 +173,7 @@ class RigidShiftNavigator(MRSTEMNavigator):
                         shape=self.nav_shape,
                         tag_prefix=self._tag("_sx_signal"),
                         parent_tag=self._tag("rigid_shift_navigator"),
-                        size_fraction=(0.33, 0),
+                        size_fraction=size_fraction,
                     )
                     self.sx_plot.render()
                     self.sx_plot.range_slider.set_limits(vmin=-5, vmax=5)
@@ -181,7 +181,7 @@ class RigidShiftNavigator(MRSTEMNavigator):
                         shape=self.nav_shape,
                         tag_prefix=self._tag("_sy_signal"),
                         parent_tag=self._tag("rigid_shift_navigator"),
-                        size_fraction=(0.33, 0),
+                        size_fraction=size_fraction,
                     )
                     self.sy_plot.render()
                     self.sy_plot.range_slider.set_limits(vmin=-5, vmax=5)
