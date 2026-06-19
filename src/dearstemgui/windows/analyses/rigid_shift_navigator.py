@@ -164,22 +164,27 @@ class RigidShiftNavigator(MRSTEMNavigator):
                     size_fraction=(0.33, 0),
                 )
                 self.signal_plot.render()
-                self.sx_plot = ImPlotElement(
-                    shape=self.nav_shape,
-                    tag_prefix=self._tag("_sx_signal"),
-                    parent_tag=self._tag("rigid_shift_navigator"),
-                    size_fraction=(0.33, 0),
-                )
-                self.sx_plot.render()
-                self.sx_plot.range_slider.set_limits(vmin=-5, vmax=5)
-                self.sy_plot = ImPlotElement(
-                    shape=self.nav_shape,
-                    tag_prefix=self._tag("_sy_signal"),
-                    parent_tag=self._tag("rigid_shift_navigator"),
-                    size_fraction=(0.33, 0),
-                )
-                self.sy_plot.render()
-                self.sy_plot.range_slider.set_limits(vmin=-5, vmax=5)
+                is_tall: bool = self.measurement.acq_params._aspect > 1
+                with dpg.group(horizontal=is_tall):
+                    size_fraction: tuple[float, float] = (
+                        (1 / 3, 0.0) if is_tall else (2 / 3, 0.0)
+                    )
+                    self.sx_plot = ImPlotElement(
+                        shape=self.nav_shape,
+                        tag_prefix=self._tag("_sx_signal"),
+                        parent_tag=self._tag("rigid_shift_navigator"),
+                        size_fraction=(0.33, 0),
+                    )
+                    self.sx_plot.render()
+                    self.sx_plot.range_slider.set_limits(vmin=-5, vmax=5)
+                    self.sy_plot = ImPlotElement(
+                        shape=self.nav_shape,
+                        tag_prefix=self._tag("_sy_signal"),
+                        parent_tag=self._tag("rigid_shift_navigator"),
+                        size_fraction=(0.33, 0),
+                    )
+                    self.sy_plot.render()
+                    self.sy_plot.range_slider.set_limits(vmin=-5, vmax=5)
             with (
                 dpg.child_window(no_scrollbar=True, tag=self._tag("_controls")),
                 dpg.group(horizontal=True),

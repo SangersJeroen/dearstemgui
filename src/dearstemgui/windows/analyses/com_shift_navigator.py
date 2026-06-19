@@ -259,7 +259,9 @@ class COMShiftNavigator(MRSTEMNavigator):
 
                 is_tall: bool = self.measurement.acq_params._aspect > 1
                 with dpg.group(horizontal=is_tall):
-                    size_fraction: tuple[float, float] = (1 / 3, 0.) if is_tall else (2 / 3, 0.)
+                    size_fraction: tuple[float, float] = (
+                        (1 / 3, 0.0) if is_tall else (2 / 3, 0.0)
+                    )
                     self.sx_plot = ImPlotElement(
                         shape=self.nav_shape,
                         tag_prefix=self._tag("_sx_signal"),
