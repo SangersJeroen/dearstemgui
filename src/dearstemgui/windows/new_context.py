@@ -32,6 +32,7 @@ def create_context_dialog() -> None:
             items=["dask", "delayed", "threads", "inline"],
             label="executor:",
             tag="context_create_executor",
+            default_value="threads"
         )
         dpg.add_button(
             label="ceate",
