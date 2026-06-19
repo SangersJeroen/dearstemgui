@@ -86,6 +86,9 @@ class EMPAD_Measurements:
         if APP_STATE.libertem_state is None:
             raise RuntimeError("Libertem state is not initialized")
 
+        self.name: str = Path(xml_file_path).name
+        self.folder: str = xml_file_path
+
         self.index: int | None = None
         self.dataset: DataSet = APP_STATE.libertem_state.context.load(
             filetype="empad", path=xml_file_path
