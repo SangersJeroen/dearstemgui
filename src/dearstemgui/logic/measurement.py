@@ -63,6 +63,10 @@ class AcquisitionParameters:
         params.__post_init__()
         return params
 
+    @property
+    def _aspect(self) -> float:
+        return self.scan_resolution_y_data / self.scan_resolution_x_data
+
     def __post_init__(self) -> None:
         self.scan_xscale = self.x_data / self.scan_resolution_x_data
         self.scan_yscale = self.y_data / self.scan_resolution_y_data
