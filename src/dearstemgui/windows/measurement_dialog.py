@@ -7,12 +7,14 @@ from dearstemgui.app_state_singleton import APP_STATE
 from dearstemgui.windows.open_file_dialog import open_file_dialog
 
 
+index: int | None = None
+
 def measurement_selector(launch_callback: Callable) -> None:
+
     if dpg.does_item_exist("measurement_selector"):
         dpg.delete_item("measurement_selector")
 
     def close_dialog() -> None:
-        index = dpg.get_value("measurement_selector_options")
         measurement = APP_STATE.loaded_measurements[int(index)]
         widget = launch_callback(measurement)
         widget.render()
@@ -22,8 +24,9 @@ def measurement_selector(launch_callback: Callable) -> None:
         measurement_selector(launch_callback=launch_callback)
 
     def update_select_label(sender: int | str, app_data: Any, user_data: int) -> None:
-        print(sender, app_data, user_data)
+        global index
         dpg.configure_item("measurement_select_continue", label=f"Select {user_data}")
+        index = int(user_data)
 
     def open_and_refresh() -> None:
         open_file_dialog()

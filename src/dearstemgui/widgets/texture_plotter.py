@@ -131,9 +131,10 @@ class ImPlotElement:
         height *= self.size_h_fraction
 
         window_tag = dpg.get_item_parent(draw_list_tag)
+        option_menu_height = dpg.get_item_rect_size(item=self.draw_list_tag + "_child")[1]
 
         dpg.set_item_width(window_tag, width)
-        dpg.set_item_height(window_tag, int(width * self.aspect))
+        dpg.set_item_height(window_tag, int(width * self.aspect)+option_menu_height)
 
         dpg.set_item_width(draw_list_tag, width)
         dpg.set_item_height(draw_list_tag, int(width * self.aspect))

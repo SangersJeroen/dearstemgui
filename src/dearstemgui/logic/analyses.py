@@ -38,6 +38,6 @@ def analyses_router_callback(
             print(user_data)
 
     launch_callback = partial(
-        instancer, ctx=APP_STATE.libertem_state.context, tag_suffix=""
+        instancer, ctx=APP_STATE.libertem_state.context, tag_suffix=user_data
     )
     measurement_selector(launch_callback)

@@ -164,7 +164,7 @@ class RigidShiftNavigator(MRSTEMNavigator):
                     size_fraction=(0.33, 0),
                 )
                 self.signal_plot.render()
-                is_tall: bool = self.measurement.acq_params._aspect > 1
+                is_tall: bool = self.measurement.acq_params._aspect > 0.95
                 with dpg.group(horizontal=is_tall):
                     size_fraction: tuple[float, float] = (
                         (1 / 3, 0.0) if is_tall else (2 / 3, 0.0)
