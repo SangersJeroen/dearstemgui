@@ -59,6 +59,7 @@ class ABFNavigator(HAADFNavigator):
 
         result = self.ctx.run_udf(dataset=self.ds, udf=udf)
         result_data = np.array(result["intensity"].data.reshape(self.nav_shape))
+        self.measurement.abf = result_data
         self.result_plot.update(data=result_data)
 
     def render(self) -> None:

@@ -12,6 +12,7 @@ from dearstemgui.windows.analyses.haadf_udf_navigator import HAADFNavigator
 from dearstemgui.windows.analyses.point_udf_navigator import PointSignalNavigator
 from dearstemgui.windows.analyses.rigid_shift_navigator import RigidShiftNavigator
 from dearstemgui.windows.analyses.signal_navigator import MRSTEMNavigator
+from dearstemgui.windows.analyses.pacbed_compute import PACBEDCompute
 from dearstemgui.windows.measurement_dialog import measurement_selector
 
 
@@ -34,6 +35,8 @@ def analyses_router_callback(
             instancer = RigidShiftNavigator
         case "com":
             instancer = COMShiftNavigator
+        case "pacbed":
+            instancer = PACBEDCompute
         case _:
             print(user_data)
 

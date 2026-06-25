@@ -93,6 +93,7 @@ class HAADFNavigator(MRSTEMNavigator):
 
         result = self.ctx.run_udf(dataset=self.ds, udf=udf)
         result_data = np.array(result["intensity"].data.reshape(self.nav_shape))
+        self.measurement.adf = result_data
 
         self.result_plot.range_slider.update()
         self.result_plot.update(data=result_data)

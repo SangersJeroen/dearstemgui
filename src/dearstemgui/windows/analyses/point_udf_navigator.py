@@ -81,16 +81,15 @@ class PointSignalNavigator(ABFNavigator):
                         f"Position: ({self.measurement.pos_y_idx}, {self.measurement.pos_x_idx})",
                         tag=self._tag("position_text"),
                     )
-                    with dpg.group(horizontal=True):
-                        navigation_element(
-                            [
-                                self._move_up,
-                                self._move_left,
-                                self._move_right,
-                                self._move_down,
-                            ],
-                            tag=self._tag("sig_move"),
-                        )
+                    navigation_element(
+                        [
+                            self._move_up,
+                            self._move_left,
+                            self._move_right,
+                            self._move_down,
+                        ],
+                        tag=self._tag("sig_move"),
+                    )
                 dpg.add_button(label="Compute", callback=lambda: self.compute())
                 with dpg.group():
                     dpg.add_text(
