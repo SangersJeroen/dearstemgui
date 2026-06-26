@@ -1,3 +1,6 @@
+from libertem.common.buffers import BufferWrapper
+from typing import Mapping
+from dearstemgui.widgets.live_texture_plotter import LiveImPlotElement
 from dearstemgui.widgets.texture_plotter import ImPlotElement
 import dearpygui.dearpygui as dpg
 from libertem.api import Context
@@ -31,7 +34,18 @@ class PACBEDCompute(ABFNavigator):
             self.mask_x : self.mask_x + self.area_width,
         ] = True
 
-        result = self.ctx.run_udf(dataset=self.ds, udf=udf, roi=roi)
+        live_plots = [
+            LiveImPlotElement(
+                dataset=self.ds,
+                udf=udf,
+                channel=("pacbed", lambda x: x),
+                update_callback=self.result_plot.update,
+            )
+        ]
+
+        result: Mapping[str, BufferWrapper] = self.ctx.run_udf(
+            dataset=self.ds, udf=udf, plots=live_plots, roi=roi, progress=True
+        )
         result_data = np.array(result["pacbed"])
         self.measurement.pacbed = result_data
         self.result_plot.update(data=result_data)

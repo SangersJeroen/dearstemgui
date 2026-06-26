@@ -1,3 +1,4 @@
+from dearstemgui.widgets.live_texture_plotter import LiveImPlotElement
 from typing import Any
 
 import dearpygui.dearpygui as dpg
@@ -102,7 +103,24 @@ class RigidShiftNavigator(MRSTEMNavigator):
     def compute(self) -> None:
         udf = self.udf
 
-        result = self.ctx.run_udf(dataset=self.ds, udf=udf, progress=True, sync=True)
+        live_plots = [
+            LiveImPlotElement(
+                dataset=self.ds,
+                udf=udf,
+                update_callback=self.sx_plot.update,
+                channel=("rigid_deflection", lambda x: x[..., 0]),
+            ),
+            LiveImPlotElement(
+                dataset=self.ds,
+                udf=udf,
+                update_callback=self.sy_plot.update,
+                channel=("rigid_deflection", lambda x: x[..., 1]),
+            ),
+        ]
+
+        result = self.ctx.run_udf(
+            dataset=self.ds, udf=udf, progress=True, plots=live_plots
+        )
         rigid_shift_signal = np.array(
             result["rigid_deflection"].data.reshape((*self.nav_shape, 2))
         )

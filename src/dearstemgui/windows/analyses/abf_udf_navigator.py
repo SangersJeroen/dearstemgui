@@ -1,3 +1,4 @@
+from dearstemgui.widgets.live_texture_plotter import LiveImPlotElement
 import dearpygui.dearpygui as dpg
 from libertem.api import Context
 import numpy as np
@@ -57,7 +58,16 @@ class ABFNavigator(HAADFNavigator):
             ro=dpg.get_value(self._tag("r_slider")),
         ).get_udf()
 
-        result = self.ctx.run_udf(dataset=self.ds, udf=udf)
+        live_plots = [
+            LiveImPlotElement(
+                dataset=self.ds,
+                udf=udf,
+                channel=("intensity", lambda x: x[..., 0]),
+                update_callback=self.result_plot.update,
+            )
+        ]
+
+        result = self.ctx.run_udf(dataset=self.ds, plots=live_plots, udf=udf, progress=True)
         result_data = np.array(result["intensity"].data.reshape(self.nav_shape))
         self.measurement.abf = result_data
         self.result_plot.update(data=result_data)

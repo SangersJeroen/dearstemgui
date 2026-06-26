@@ -1,3 +1,4 @@
+from dearstemgui.widgets.live_texture_plotter import LiveImPlotElement
 from dearstemgui.widgets.texture_plotter import ImPlotElement
 import dearpygui.dearpygui as dpg
 from libertem.api import Context
@@ -48,9 +49,19 @@ class PointSignalNavigator(ABFNavigator):
             y=self.mask_y,
         ).get_udf()
 
-        result = self.ctx.run_udf(dataset=self.ds, udf=udf, progress=True)
+        live_plots = [
+            LiveImPlotElement(
+                dataset=self.ds,
+                udf=udf,
+                update_callback=self.result_plot.update,
+                channel=("intensity", lambda x: x),
+            )
+        ]
+
+        result = self.ctx.run_udf(
+            dataset=self.ds, udf=udf, plots=live_plots, progress=True
+        )
         result_data = np.array(result["intensity"].data.reshape(self.nav_shape))
-        print("computed")
         self.result_plot.update(data=result_data)
 
     def render(self) -> None:
